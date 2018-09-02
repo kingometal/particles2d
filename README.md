@@ -26,10 +26,18 @@ There is a way to control the physical constants (i.e. gravitational/electric/at
 
 
 # Prerequisites
-TBD
+Following libraries are required to compile the library on linux (alpine:3.7):
+
+make
+
+g++
+
+libx11-dev
+
 
 # Compiliing
 Simply run "make" in the project folder
+
 
 # Running
 After successful compiling, run "partices2d.x". 
@@ -38,3 +46,11 @@ After successful compiling, run "partices2d.x".
 # Configuration
 No command-line parameters are supported yet.
 Consider editing "constants.h" instead.
+
+
+# Experimental: Compile and Run in docker
+Assuming you know, what docker is:
+If you prefer running the programm in a docker container instead of installing the required libraries on your pc, 
+you can try running runDocker.sh.
+
+Required files are runDocker.sh and Dockerfile
