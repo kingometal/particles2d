@@ -12,6 +12,7 @@ public:
 
     // ParticlesViewInterface interface
     void DrawParticle(int index, EColor color, int x, int y);
+    void DrawParticle(EColor color, int x, int y);
     char CheckKeyPress();
     int GetSide();
 

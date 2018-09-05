@@ -36,6 +36,11 @@ void ParticlesView::SetColor(EColor color)
 
 void ParticlesView::DrawParticle(int /*index*/, EColor color, int x, int y)
 {
+	DrawParticle(color, x, y);
+}
+
+void ParticlesView::DrawParticle(EColor color, int x, int y)
+{
     SetColor (color);
 
     DrawPoint (x-2,y-1);
