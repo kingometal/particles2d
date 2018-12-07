@@ -1,26 +1,35 @@
 #include "particles.h"
 #include "constants.h"
 #include "particlesview.h"
+#include "particlesviewsdladapter.h"
+#include "plugin/DemoPresenter.h"
+#include "plugin/UserInput.h"
 #include <iostream>
 
+//#define USE_SDL
+
 int main(void){
-    double en;
-    ParticlesView* W = new ParticlesView(WINDOW_SIDE);
-    Particles Ps(*W);
-    Ps.init();
-    int j = 0;
+#ifdef USE_SDL
+    DemoPresenter* presenter = new DemoPresenter();
+    ParticlesViewInterface* view = new particlesViewSdlAdapter(*presenter, WINDOW_SIDE);
+    UserInput* userInput = new UserInput();
+#else
+    ParticlesView* view = new ParticlesView(WINDOW_SIDE);
+    IUserInput* userInput = view;
+#endif
+    Particles Ps(*view, *userInput);
+    Ps.Init();
     do
     {
-        for (int i = 0; i<1; i++)
-        {
-            Ps.sleeps(1.0);
-            if (!Ps.update())
-            {
-                delete W;
-                return 0;
-            }
-        }
+        Ps.Update();
     }
-    while (true);
+    while (! userInput->IsQuitRequested());
+    delete view;
+#ifdef USE_SDL
+    delete presenter;
+    delete userInput;
+#endif
+    return 0;
+
 }
 

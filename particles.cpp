@@ -3,27 +3,27 @@
 #include "constants.h"
 #include "include/rnd.h"
 #include <iostream>
-
+#include "plugin/IUserInput.h"
 #include <cmath>
 #include "particlesviewinterface.h"
 
 
-Particles::Particles(ParticlesViewInterface &window):
+Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput):
     W(window),
+    UserInput (userInput),
     L(window.GetSide()*ZOOM),
-    N(PARTICLE_COUNT),
-    G(GRAVITY),
-    E(ELECTRO),
-    M(MAGNETI),
-    Mol(ATOMIC),
-    t(0)
+    NumParticles(PARTICLE_COUNT),
+    GravitationalConstant(GRAVITY),
+    ElectrostaticConstant(ELECTRO),
+    MagneticPermeability(MAGNETI),
+    MolecularBondingEnergy(ATOMIC)
 {
-    p = new Particle[N];
+    ParticleN = new Particle[NumParticles];
 }
 
 Particles::~Particles()
 {
-    delete[] p;
+    delete[] ParticleN;
 }
 
 
@@ -58,59 +58,59 @@ double Particles::oneDcollision(double v, double v2, double m, double m2){
 
 double Particles::getR (int n1, int n2)
 { //Abstand zwischen Partikeln bestimmen
-    return sqrt( (p[n2].getX()-p[n1].getX())*(p[n2].getX()-p[n1].getX())+(p[n2].getY()-p[n1].getY())*(p[n2].getY()-p[n1].getY())   )   ;
+    return sqrt( pow(ParticleN[n2].GetXPosition()-ParticleN[n1].GetXPosition(),2)+pow(ParticleN[n2].GetYPosition()-ParticleN[n1].GetYPosition(),2));
 }
 
-bool Particles::checkOverlap(int n1, int n2, double distance){
-    return distance < p[n1].getR()+p[n2].getR();
+bool Particles::CheckOverlap(int n1, int n2, double distance){
+    return distance < ParticleN[n1].GetRadius()+ParticleN[n2].GetRadius();
 }
 
-bool Particles::checkCollision(int n1, int n2){
-    return sqrt(pow( (p[n2].getX()+p[n2].getVx()) - (p[n1].getX()+p[n1].getVx()) , 2.0 ) + pow( (p[n2].getY()+p[n2].getVy())-(p[n1].getY()+p[n1].getVy()) ,2.0)) < p[n1].getR()+p[n2].getR();
+bool Particles::CheckCollisionImminent(int n1, int n2){
+    return sqrt(pow( (ParticleN[n2].GetXPosition()+ParticleN[n2].GetXVelocity()) - (ParticleN[n1].GetXPosition()+ParticleN[n1].GetXVelocity()) , 2.0 ) + pow( (ParticleN[n2].GetYPosition()+ParticleN[n2].GetYVelocity())-(ParticleN[n1].GetYPosition()+ParticleN[n1].GetYVelocity()) ,2.0)) < ParticleN[n1].GetRadius()+ParticleN[n2].GetRadius();
 }
 
-void Particles::overlap(int n1, int n2, double r){
-    if (checkOverlap(n1, n2, r)){
-        cout << "overlap" << endl;
+void Particles::ResolveOverlapIfNeeded(int n1, int n2, double r){
+    if (CheckOverlap(n1, n2, r)){
+//        cout << "overlap" << endl;
 
-        double x1 = p[n1].getX();
-        double x2 = p[n2].getX();
-        double y1 = p[n1].getY();
-        double y2 = p[n2].getY();
+        double x1 = ParticleN[n1].GetXPosition();
+        double x2 = ParticleN[n2].GetXPosition();
+        double y1 = ParticleN[n1].GetYPosition();
+        double y2 = ParticleN[n2].GetYPosition();
 
         double rx = x2 - x1;
         double ry = y2 - y1;
-        double cm = (p[n2].getM()*r)/(p[n2].getM()+p[n1].getM());  //center of mass
+        double cm = (ParticleN[n2].GetMass()*r)/(ParticleN[n2].GetMass()+ParticleN[n1].GetMass());  //center of mass
         double cmx = x1 + rx*cm/r;
         double cmy = y1 + ry*cm/r;
 
-        double R = p[n1].getR() + p[n2].getR();
+        double R = ParticleN[n1].GetRadius() + ParticleN[n2].GetRadius();
         double quot = R/r;
-        p[n2].setX((x2-cmx)*quot + cmx, (y2-cmy)*quot + cmy);
-        p[n1].setX((x1-cmx)*quot + cmx, (y1-cmy)*quot + cmy);
+        ParticleN[n2].SetPosition((x2-cmx)*quot + cmx, (y2-cmy)*quot + cmy);
+        ParticleN[n1].SetPosition((x1-cmx)*quot + cmx, (y1-cmy)*quot + cmy);
     }
 }
 
 void Particles::collision (int n1, int n2){
 
-    double tanr = (p[n1].getY()-p[n2].getY())/(p[n1].getX() - p[n2].getX());
+    double tanr = (ParticleN[n1].GetYPosition()-ParticleN[n2].GetYPosition())/(ParticleN[n1].GetXPosition() - ParticleN[n2].GetXPosition());
     double cosr = 1/sqrt(tanr*tanr + 1.0);
     double sinr = tanr*cosr;
 
-    if (p[n1].getX() - p[n2].getX() == 0.0) {
+    if (ParticleN[n1].GetXPosition() - ParticleN[n2].GetXPosition() == 0.0) {
         tanr = 0.0;
         cosr = 0.0;
         sinr = 1.0;
     }
 
-    double vGedrehtx1 = cosr*p[n1].getVx() + sinr*p[n1].getVy();
-    double vGedrehty1 = cosr*p[n1].getVy() - sinr*p[n1].getVx();
-    double vGedrehtx2 = cosr*p[n2].getVx() + sinr*p[n2].getVy();
-    double vGedrehty2 = cosr*p[n2].getVy() - sinr*p[n2].getVx();
+    double vGedrehtx1 = cosr*ParticleN[n1].GetXVelocity() + sinr*ParticleN[n1].GetYVelocity();
+    double vGedrehty1 = cosr*ParticleN[n1].GetYVelocity() - sinr*ParticleN[n1].GetXVelocity();
+    double vGedrehtx2 = cosr*ParticleN[n2].GetXVelocity() + sinr*ParticleN[n2].GetYVelocity();
+    double vGedrehty2 = cosr*ParticleN[n2].GetYVelocity() - sinr*ParticleN[n2].GetXVelocity();
 
     double vGedrehttemp = vGedrehtx1;
-    vGedrehtx1 = oneDcollision (vGedrehtx1, vGedrehtx2, p[n1].getM(), p[n2].getM());
-    vGedrehtx2 = oneDcollision (vGedrehtx2, vGedrehttemp, p[n2].getM(), p[n1].getM());
+    vGedrehtx1 = oneDcollision (vGedrehtx1, vGedrehtx2, ParticleN[n1].GetMass(), ParticleN[n2].GetMass());
+    vGedrehtx2 = oneDcollision (vGedrehtx2, vGedrehttemp, ParticleN[n2].GetMass(), ParticleN[n1].GetMass());
 
     vGedrehttemp = vGedrehtx1;
     vGedrehtx1 = cosr*vGedrehtx1 - sinr*vGedrehty1;
@@ -119,71 +119,70 @@ void Particles::collision (int n1, int n2){
     vGedrehtx2 = cosr*vGedrehtx2 - sinr*vGedrehty2;
     vGedrehty2 = cosr*vGedrehty2 + sinr*vGedrehttemp;
 
-    p[n1].setV(vGedrehtx1, vGedrehty1);
-    p[n2].setV(vGedrehtx2, vGedrehty2);
+    ParticleN[n1].SetVelocity(vGedrehtx1, vGedrehty1);
+    ParticleN[n2].SetVelocity(vGedrehtx2, vGedrehty2);
 }
 
-void Particles::force(int n1, int n2, double r){
+double Particles::Mass(int n)
+{
+    return ParticleN[n].GetMass();
+}
+
+double Particles::Charge(int n)
+{
+    return ParticleN[n].GetCharge();
+}
+
+void Particles::ApplyForce(int n1, int n2){
     double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0;
+    double dx = ParticleN[n1].GetXPosition()-ParticleN[n2].GetXPosition();
+    double dy = ParticleN[n1].GetYPosition()-ParticleN[n2].GetYPosition();
+    double distance = hypot(dx, dy);
+    double reziR = 1.0/distance;
+    double reziR3 = pow(reziR, 3);
 
-    double reziR3 = 1/(r*r*r);
-    double reziR = 1.0/r;
-    double x1 = p[n1].getX();
-    double y1 = p[n1].getY();
-    double q1 = p[n1].getQ();
-
-    double x2 = p[n2].getX();
-    double y2 = p[n2].getY();
-    double q2 = p[n2].getQ();
-
-    double dx = x1-x2;
-    double dy = y1-y2;
-
-    double lorentz = p[n2].getVx()*dy - p[n2].getVy()*dx;
 
     //Gravitationskraft
     {
-        double pot = - G*p[n1].getM()*p[n2].getM()*reziR3;
-        fgx += pot*dx;
-        fgy += pot*dy;
+        double pot = - GravitationalConstant*Mass(n1)*Mass(n2)*reziR3;
+        fgx = pot*dx;
+        fgy = pot*dy;
     }
 
     //Coulombkraft und Lorenzkraft
     {
-        double pot = q1*q2*reziR3;
-        fcx = pot * (E*dx + M * p[n1].getVy()*lorentz );
-        fcy = pot * (E*dy - M * p[n1].getVx()*lorentz );
+        double pot = Charge(n1)*Charge(n2)*reziR3;
+        double lorentz = ParticleN[n2].GetXVelocity()*dy - ParticleN[n2].GetYVelocity()*dx;
+        fcx = pot * (ElectrostaticConstant*dx + MagneticPermeability * ParticleN[n1].GetYVelocity()*lorentz );
+        fcy = pot * (ElectrostaticConstant*dy - MagneticPermeability * ParticleN[n1].GetXVelocity()*lorentz );
     }
 
-    //        //Molekulare Abstossende Kraft
-//    if (r < ATOMIC_RADIUS * 20)
+    // Lennard-Jones Potential Force
+    if (distance < ATOMIC_RADIUS * 20)
     {
-        double pot = Mol * (pow(ATOMIC_RADIUS/r, 12) - pow(ATOMIC_RADIUS/r, 6)) ;
-        fmx = pot * dx * reziR;
-        fmy = pot * dy * reziR;
-//        if (n1 == 0 && n2 == 1)
-//        {
-//            cout << "distance : " << r << " pot: " << pot << " = " << Mol << " * (" <<  pow(ATOMIC_RADIUS/r, 12) << " - "  <<  pow(ATOMIC_RADIUS/r, 6) <<  " )"   <<  "G: " << - G*p[n1].getM()*p[n2].getM()*reziR3*r <<  endl ;
-//        }
+        double arr = pow(ATOMIC_RADIUS*reziR , 6);
+        double pot = MolecularBondingEnergy * (pow(arr, 2) - arr) * reziR ;
+        fmx = pot * dx;
+        fmy = pot * dy;
     }
 
-    p[n1].incG( fgx+fcx+fmx,fgy+fcy+fmy);
-    p[n2].decG( fgx+fcx+fmx,fgy+fcy+fmy);
+    ParticleN[n1].IncreaseForce( fgx+fcx+fmx,fgy+fcy+fmy);
+    ParticleN[n2].DecreaseForce( fgx+fcx+fmx,fgy+fcy+fmy);
 }
 
 double Particles::eKin(){
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        En += 0.5*p[n1].getM()*p[n1].getV2();
+    for (int n1 = 0; n1 < NumParticles; n1++){
+        En += 0.5*ParticleN[n1].GetMass()*ParticleN[n1].GetSquaredVelocity();
     }
     return(En);
 }
 
 double Particles::eEl(){
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
-            En+=E*p[n1].getQ()*p[n2].getQ()/getR(n1,n2);
+    for (int n1 = 0; n1 < NumParticles; n1++){
+        for(int n2=n1+1; n2<NumParticles; n2++){
+            En+=ElectrostaticConstant*ParticleN[n1].GetCharge()*ParticleN[n2].GetCharge()/getR(n1,n2);
         }
     }
     return(En);
@@ -191,9 +190,9 @@ double Particles::eEl(){
 
 double Particles::eG(){
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
-            En=G*p[n1].getM()*p[n2].getM()/getR(n1,n2);
+    for (int n1 = 0; n1 < NumParticles; n1++){
+        for(int n2=n1+1; n2<NumParticles; n2++){
+            En=GravitationalConstant*ParticleN[n1].GetMass()*ParticleN[n2].GetMass()/getR(n1,n2);
         }
     }
     return(En);
@@ -201,17 +200,17 @@ double Particles::eG(){
 
 double Particles::eMol(){
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
+    for (int n1 = 0; n1 < NumParticles; n1++){
+        for(int n2=n1+1; n2<NumParticles; n2++){
             double r = getR(n1,n2);
-            En-= 4*Mol * (pow(ATOMIC_RADIUS/r, 12) - pow(ATOMIC_RADIUS/r, 6)) ;
+            En-= 4*MolecularBondingEnergy * (pow(ATOMIC_RADIUS/r, 12) - pow(ATOMIC_RADIUS/r, 6)) ;
         }
     }
     return(En);
 }
 
 
-void Particles::redraw(int index, double oldX, double oldY, double x, double y, double q)
+void Particles::RedrawParticleAtNewPosition(int index, double oldX, double oldY, double x, double y, double q)
 {
     x = x/ZOOM;
     y = y/ZOOM;
@@ -229,20 +228,17 @@ void Particles::redraw(int index, double oldX, double oldY, double x, double y, 
     }
     W.DrawParticle(index, White, oldX, oldY);
     W.DrawParticle(index,particleColor, x,y);
-
-
 }
 
-void Particles::redraw(int index)
+void Particles::RedrawParticleAtNewPosition(int index)
 {
-    redraw(index, p[index].getPrevX(), p[index].getPrevY(), p[index].getX(), p[index].getY(), p[index].getQ());
+    RedrawParticleAtNewPosition(index, ParticleN[index].GetSavedXPosition(), ParticleN[index].GetSavedYPosition(), ParticleN[index].GetXPosition(), ParticleN[index].GetYPosition(), Charge(index));
 }
 
 void Particles::redrawV(){
 //    W.Black();
 //    W.DrawLine (x, y, x+vx*100, y+vy*100);
 }
-
 
 void Particles::redrawV(int color){
 //    W.Black();
@@ -251,113 +247,127 @@ void Particles::redrawV(int color){
 //    W.Black();
 }
 
-
-
 void Particles::sleeps( clock_t wait ){
     clock_t goal;
     goal = wait + clock();
     while( goal > clock() );
 }
 
-void Particles::init(void){
+void Particles::Init(void){
     InitRandom();
     double R =  RADIUS;
     int Mid = L/2;
-    for (int n = 0; n<N; n++){
-        int pot = n%2 == 0 ? -1 : 1;
-        //while (R<=1) R = rnd(5);
+    for (int n = 0; n<NumParticles; n++){
+        int positiveOrNegative = n%2 == 0 ? -1 : 1;
         double distance = 30.0;
-        p[n].setX(Mid+pow(n, 1.0/3.0)*distance*ZOOM*sin(n), Mid+pow(n, 1.0/3.0)*distance*ZOOM*cos(n));
-        p[n].setM(MASS);
-        p[n].setQ(pot * CHARGE);
+        ParticleN[n].SetPosition(Mid+pow(n, 1.0/3.0)*distance*ZOOM*sin(n), Mid+pow(n, 1.0/3.0)*distance*ZOOM*cos(n));
+        ParticleN[n].SavePosition();
+        ParticleN[n].SetMass(MASS);
+        ParticleN[n].SetCharge(positiveOrNegative * CHARGE);
         double speedRange =  0.01;
-        p[n].setV(-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));//0.323478
-        p[n].setG(0.0, 0.0);
-        p[n].setR(R);
-        cout << "n: " <<  n << " M:" << p[n].getM() << " Q:" << p[n].getQ() << " R:" << p[n].getR()<< endl;
+        ParticleN[n].SetVelocity(-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));//0.323478
+        ParticleN[n].SetForce(0.0, 0.0);
+        ParticleN[n].SetRadius(R);
+        cout << "n: " <<  n << " M:" << ParticleN[n].GetMass() << " Q:" << ParticleN[n].GetCharge() << " R:" << ParticleN[n].GetRadius()<< endl;
 
-        redraw(n, p[n].getX(), p[n].getY(), p[n].getX(), p[n].getY(), p[n].getQ());
-        p[n].setPrev();
+        RedrawParticleAtNewPosition(n, ParticleN[n].GetXPosition(), ParticleN[n].GetYPosition(), ParticleN[n].GetXPosition(), ParticleN[n].GetYPosition(), ParticleN[n].GetCharge());
     }
+    W.DrawScreen();
 }
 
 
-bool Particles::update(){
-    for (int n1=0; n1<N; n1++)
-    {
-        p[n1].setG(0.0, 0.0);
-    }
+void Particles::Update(){
+    ResetParticlesForces();
+    UpdateParticlesForcesAndVelocities();
+#if CHECK_COLLISIONS
+    AvoidCollisions();
+#endif
+    UpdateParticlesPositionsAndDraw();
+    HandleKeyPress();
+    W.DrawScreen();
+}
 
-    for (int n1=0; n1<N; n1++)
+void Particles::ResetParticlesForces()
+{
+    for (int n=0; n<NumParticles; n++)
     {
-        for (int n2=n1; n2<N; n2++)
+        ParticleN[n].SetForce(0.0, 0.0);
+    }
+}
+
+void Particles::UpdateParticlesForcesAndVelocities()
+{
+    for (int n1=0; n1<NumParticles; n1++)
+    {
+        for (int n2=n1+1; n2<NumParticles; n2++) // this has to be done in this order, not "n2 = 0; n2 < n1;" because otherwise you cannot update speed in the same loop
         {
             if (n2!=n1)
             {
-                double distance = getR(n1, n2);
-                force(n1,n2,distance);
+                ApplyForce(n1,n2);
             }
         }
-        p[n1].stepV(L);
+        ParticleN[n1].UpdateSpeedAccordingToForceDissipationAndBorders(L);
     }
-#if CHECK_COLLISIONS
-    for (int n1 = 0; n1<N; n1++)
+}
+
+void Particles::UpdateParticlesPositionsAndDraw()
+{
+    for(int n1=0; n1<NumParticles;n1++){
+        ParticleN[n1].MoveAccordingToCurrentVelocity();
+        RedrawParticleAtNewPosition(n1);
+        ParticleN[n1].SavePosition();
+    }
+}
+
+void Particles::AvoidCollisions()
+{
+    for (int n1 = 0; n1<NumParticles; n1++)
     {
         for (int n2 = 0; n2<n1; n2++)
         {
             double distance = getR(n1, n2);
-            if (checkCollision(n1, n2))
+            ResolveOverlapIfNeeded(n1,n2, distance);
+            if (CheckCollisionImminent(n1, n2))
             {
-                cout << "collision" << n1 << " " << n2 << endl;
                 collision(n1, n2);
-                p[n1].setG(0.0,0.0);
-                p[n2].setG(0.0,0.0);
-                force (n1, n2, distance);
-                p[n1].stepV(L);
-                p[n2].stepV(L);
+                ParticleN[n1].SetForce(0.0,0.0);
+                ParticleN[n2].SetForce(0.0,0.0);
+                ApplyForce(n1, n2);
+                ParticleN[n1].UpdateSpeedAccordingToForceDissipationAndBorders(L);
+                ParticleN[n2].UpdateSpeedAccordingToForceDissipationAndBorders(L);
             }
-            overlap(n1,n2, distance);
         }
     }
-#endif
+}
 
-    t++;
-
-    char check = W.CheckKeyPress();
-    if (check != '0')
+void Particles::HandleKeyPress()
+{
+    char check = UserInput.CheckKeyPress();
+    if (check != 0 && check != '0')
     {
         cout << check << endl;
     }
-    if (check =='-') {G /= 2; if (G < 0.000000000001) G = 0.0;  cout << "G =" << G << endl;}
-    if (check =='+') {G *= 2; if (G < 0.000000000001) G = 0.00000000001;  cout << "G =" << G << endl;}
-    if (check =='1') {E /= 2; if (E < 0.000000000001) E = 0.0;  cout << "E =" << E << endl;}
-    if (check =='2') {E *= 2; if (E < 0.000000000001) E = 0.00000000001;  cout << "E =" << E << endl;}
-    if (check =='4') {Mol /= 2; if (Mol < 0.000000000001) Mol = 0.0;  cout << "Mol =" << Mol << endl;}
-    if (check =='5') {Mol *= 2; if (Mol < 0.000000000001) Mol = 0.00000000001;  cout << "Mol =" << Mol << endl;}
+    if (check =='-') {GravitationalConstant /= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.0;  cout << "G =" << GravitationalConstant << endl;}
+    if (check =='+') {GravitationalConstant *= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.00000000001;  cout << "G =" << GravitationalConstant << endl;}
+    if (check =='1') {ElectrostaticConstant /= 2; if (ElectrostaticConstant < 0.000000000001) ElectrostaticConstant = 0.0;  cout << "E =" << ElectrostaticConstant << endl;}
+    if (check =='2') {ElectrostaticConstant *= 2; if (ElectrostaticConstant < 0.000000000001) ElectrostaticConstant = 0.00000000001;  cout << "E =" << ElectrostaticConstant << endl;}
+    if (check =='4') {MolecularBondingEnergy /= 2; if (MolecularBondingEnergy < 0.000000000001) MolecularBondingEnergy = 0.0;  cout << "Mol =" << MolecularBondingEnergy << endl;}
+    if (check =='5') {MolecularBondingEnergy *= 2; if (MolecularBondingEnergy < 0.000000000001) MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << MolecularBondingEnergy << endl;}
 
     if (check =='/') {
-        for (int i = 0; i < N; i++){
-            if (p[i].getR()>0.1){
-                p[i].setR(p[i].getR()-0.1);
+        for (int i = 0; i < NumParticles; i++){
+            if (ParticleN[i].GetRadius()>0.1){
+                ParticleN[i].SetRadius(ParticleN[i].GetRadius()-0.1);
             }
 
         }
-        cout << "radius reduced by 0.1; it is now " << p[0].getR() << endl;
+        cout << "radius reduced by 0.1; it is now " << ParticleN[0].GetRadius() << endl;
     }
     if (check =='*') {
-        for (int i = 0; i < N; i++){
-            p[i].setR(p[i].getR()+0.1);
+        for (int i = 0; i < NumParticles; i++){
+            ParticleN[i].SetRadius(ParticleN[i].GetRadius()+0.1);
 
         }
-        cout << "radius increased by 0.1; it is now " << p[0].getR() << endl;
+        cout << "radius increased by 0.1; it is now " << ParticleN[0].GetRadius() << endl;
     }
-    if (check =='q') {return false;}
-
-
-    for(int n1=0; n1<N;n1++){
-        p[n1].stepX();
-        redraw(n1);
-        p[n1].setPrev();
-    }
-    return true;
 }

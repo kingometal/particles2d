@@ -15,8 +15,6 @@
 
 #include <X11/Xutil.h>
 
-
-
 class XWindow
 {
 public:

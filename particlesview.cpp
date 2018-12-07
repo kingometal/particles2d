@@ -30,7 +30,6 @@ void ParticlesView::SetColor(EColor color)
    case EColor::Blue:
        this->Blue();
        break;
-
    }
 }
 
@@ -75,8 +74,18 @@ char ParticlesView::CheckKeyPress()
     return XWindow::CheckKeyPress();
 }
 
+bool ParticlesView::IsQuitRequested()
+{
+    return ('q' == CheckKeyPress());
+}
+
 int ParticlesView::GetSide()
 {
     return Side;
+}
+
+void ParticlesView::DrawScreen()
+{
+    // nothing to do
 }
 

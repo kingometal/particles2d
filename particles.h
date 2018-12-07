@@ -6,13 +6,14 @@
 
 class Particle;
 class ParticlesViewInterface;
+class IUserInput;
 
 class Particles{
 public:
-    Particles(ParticlesViewInterface& window);
+    Particles(ParticlesViewInterface& window, IUserInput& userInput);
     ~Particles();
-    bool update();
-    void init();
+    void Update();
+    void Init();
 
     double eEl();
     double eKin();
@@ -23,35 +24,33 @@ public:
 private:
     void redrawV(int color);
     void redrawV();
-    void redraw(int index, double oldX, double oldY, double x, double y, double q);
-    void redraw(int index);
-    void force(int n1, int n2, double r);
+    void RedrawParticleAtNewPosition(int index, double oldX, double oldY, double x, double y, double q);
+    void RedrawParticleAtNewPosition(int index);
+    void ApplyForce(int n1, int n2);
     void collision(int n1, int n2);
-    void overlap(int n1, int n2, double r);
-    bool checkCollision(int n1, int n2);
-    bool checkOverlap(int n1, int n2, double distance);
+    void ResolveOverlapIfNeeded(int n1, int n2, double r);
+    bool CheckCollisionImminent(int n1, int n2);
+    bool CheckOverlap(int n1, int n2, double distance);
     double getR(int n1, int n2);
     double oneDcollision(double v, double v2, double m, double m2);
 
     const int L;
     ParticlesViewInterface &W;
+    IUserInput& UserInput;
 
-//    double x;
-//    double y;
-//    double vx;
-//    double vy;
-//    double q;
-//    double R;
-//    double X;
-//    double Y;
-
-    const int N;
-    Particle* p;
-    double G;
-    double E;
-    const double M;
-    double Mol;
-    int t;
+    const int NumParticles;
+    Particle* ParticleN;
+    double GravitationalConstant;
+    double ElectrostaticConstant;
+    const double MagneticPermeability;
+    double MolecularBondingEnergy;
+    void HandleKeyPress();
+    double Mass(int n);
+    double Charge(int n);
+    void AvoidCollisions();
+    void UpdateParticlesPositionsAndDraw();
+    void ResetParticlesForces();
+    void UpdateParticlesForcesAndVelocities();
 };
 
 #endif

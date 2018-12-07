@@ -3,41 +3,39 @@
 
 class Particle{
 private:
-	double x[2];
-	double v[2];
-	double prevx[2];
+    double Position[2];
+    double Velocity[2];
+    double SavedPosition[2];
 
-	double m;
-    double q;
-	double r;
+    double Mass;
+    double Charge;
+    double Radius;
+    double Force[2];
 
 public:
-	double g[2];
         Particle();
-
-
-        void stepV();
-        void stepV(double L);
-        void stepX(double L);
-        void stepX();
-        void decG(double addGx, double addGy);
-        void incG(double addGx, double addGy);
-        void setG(double newGx, double newGy);
-        void setV(double newVx, double newVy);
-        double getV2();
-        double getVy();
-        double getVx();
-        void setPrev();
-        void setX(double newX, double newY);
-        double getPrevY();
-        double getPrevX();
-        double getY();
-        double getX();
-        void setQ(double newQ);
-        double getQ();
-        void setM(double newM);
-        double getM();
-        double getR();
-        void setR(double newR);
+        void UpdateSpeedAccordingToForce();
+        void UpdateSpeedAccordingToForceDissipationAndBorders(double L);
+        void MoveAccordingToCurrentVelocity(double L);
+        void MoveAccordingToCurrentVelocity();
+        void DecreaseForce(double minusDeltaFx, double minusDeltaFy);
+        void IncreaseForce(double deltaFx, double deltaFy);
+        void SetForce(double newGx, double newGy);
+        void SetVelocity(double newVx, double newVy);
+        double GetSquaredVelocity();
+        double GetYVelocity();
+        double GetXVelocity();
+        void SavePosition();
+        void SetPosition(double newX, double newY);
+        double GetSavedYPosition();
+        double GetSavedXPosition();
+        double GetYPosition();
+        double GetXPosition();
+        void SetCharge(double newQ);
+        double GetCharge();
+        void SetMass(double newM);
+        double GetMass();
+        double GetRadius();
+        void SetRadius(double newR);
 };
 #endif

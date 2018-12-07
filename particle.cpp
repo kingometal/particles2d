@@ -4,122 +4,121 @@
 
 Particle::Particle(void){
         for (int n = 0; n< 2; n++){
-                x[n] = 0;
-                v[n] = 0;
-                g[n] = 0;
+                Position[n] = 0;
+                Velocity[n] = 0;
+                Force[n] = 0;
         }
-        m=MASS;
-        q=CHARGE;
-        r=RADIUS;
+        Mass=MASS;
+        Charge=CHARGE;
+        Radius=RADIUS;
 }
 
 
-void  Particle::setR(double newR){
-        r = newR;
+void  Particle::SetRadius(double newR){
+        Radius = newR;
 }
 
-double Particle::getR(){
-        return r;
+double Particle::GetRadius(){
+        return Radius;
 }
 
-double Particle::getM(){
-        return m;
+double Particle::GetMass(){
+        return Mass;
 }
 
-void Particle::setM(double newM){
-        m = newM;
+void Particle::SetMass(double newM){
+        Mass = newM;
 }
 
-double Particle::getQ(){
-        return q;
+double Particle::GetCharge(){
+        return Charge;
 }
 
-void Particle::setQ(double newQ){
-        q = newQ;
+void Particle::SetCharge(double newQ){
+        Charge = newQ;
 }
 
-double Particle::getX(void){
-        return x[0];
+double Particle::GetXPosition(void){
+        return Position[0];
 }
 
-double Particle::getY(void){
-        return x[1];
+double Particle::GetYPosition(void){
+        return Position[1];
 }
 
-double Particle::getPrevX(void){
-        return prevx[0];
+double Particle::GetSavedXPosition(void){
+        return SavedPosition[0];
 }
 
-double Particle::getPrevY(void){
-        return prevx[1];
-}
-
-
-
-void Particle::setX(double newX, double newY){
-        x[0] = newX;
-        x[1] = newY;
-}
-
-void Particle::setPrev(){
-        prevx[0] = x[0];
-        prevx[1] = x[1];
-}
-
-double Particle::getVx(void){
-        return v[0];
-}
-
-double Particle::getVy(void){
-        return v[1];
-}
-
-double Particle::getV2(void){
-        return v[0]*v[0]+v[1]*v[1];
-}
-
-void Particle::setV(double newVx, double newVy){
-        v[0] = newVx;
-        v[1] = newVy;
-}
-
-void Particle::setG(double newGx, double newGy){
-        g[0] = newGx;
-        g[1] = newGy;
-
-}
-
-void Particle::incG(double addGx, double addGy){
-        g[0] += addGx;
-        g[1] += addGy;
-}
-
-void Particle::decG(double addGx, double addGy){
-        g[0] -= addGx;
-        g[1] -= addGy;
-}
-
-void Particle::stepX(){
-        x[0]+=v[0];
-        x[1]+=v[1];
-}
-
-void Particle::stepX(double L){
-        x[0]+=v[0];
-        x[1]+=v[1];
+double Particle::GetSavedYPosition(void){
+        return SavedPosition[1];
 }
 
 
-void Particle::stepV(double L){
+void Particle::SetPosition(double newX, double newY){
+        Position[0] = newX;
+        Position[1] = newY;
+}
+
+void Particle::SavePosition(){
+        SavedPosition[0] = Position[0];
+        SavedPosition[1] = Position[1];
+}
+
+double Particle::GetXVelocity(void){
+        return Velocity[0];
+}
+
+double Particle::GetYVelocity(void){
+        return Velocity[1];
+}
+
+double Particle::GetSquaredVelocity(void){
+        return Velocity[0]*Velocity[0]+Velocity[1]*Velocity[1];
+}
+
+void Particle::SetVelocity(double newVx, double newVy){
+        Velocity[0] = newVx;
+        Velocity[1] = newVy;
+}
+
+void Particle::SetForce(double newGx, double newGy){
+        Force[0] = newGx;
+        Force[1] = newGy;
+
+}
+
+void Particle::IncreaseForce(double deltaFx, double deltaFy){
+        Force[0] += deltaFx;
+        Force[1] += deltaFy;
+}
+
+void Particle::DecreaseForce(double minusDeltaFx, double minusDeltaFy){
+        Force[0] -= minusDeltaFx;
+        Force[1] -= minusDeltaFy;
+}
+
+void Particle::MoveAccordingToCurrentVelocity(){
+        Position[0]+=Velocity[0];
+        Position[1]+=Velocity[1];
+}
+
+void Particle::MoveAccordingToCurrentVelocity(double L){
+        Position[0]+=Velocity[0];
+        Position[1]+=Velocity[1];
+}
+
+
+void Particle::UpdateSpeedAccordingToForceDissipationAndBorders(double L){
         for (int n=0; n<2 ;n++){
-                if (x[n]+v[n]+g[n]/m >= L or x[n]+v[n]+g[n]/m <0) {v[n]+= g[n]/m; v[n] *= -1;}
-                v[n] += g[n]/m;
-                v[n] = v[n]*(1 - 0.01*DISSIPATION_PERCENT);
+                if (Position[n]+Velocity[n]+Force[n]/Mass >= L or Position[n]+Velocity[n]+Force[n]/Mass <0) {Velocity[n]+= Force[n]/Mass; Velocity[n] *= -1;}
+                Velocity[n] += Force[n]/Mass;
+                Velocity[n] = Velocity[n]*(1 - 0.01*DISSIPATION_PERCENT);
         }
 }
 
-void Particle::stepV(){
+void Particle::UpdateSpeedAccordingToForce(){
         for (int n=0; n<2 ;n++){
-                v[n] += g[n]/m;
+                Velocity[n] += Force[n]/Mass;
         }
 }
