@@ -4,10 +4,10 @@
 
 class IPresenter;
 
-class particlesViewSdlAdapter: public ParticlesViewInterface
+class ParticlesViewSdlAdapter: public ParticlesViewInterface
 {
 public:
-    particlesViewSdlAdapter(IPresenter& presenter, int side);
+    ParticlesViewSdlAdapter(IPresenter& presenter, int side);
 
     // ParticlesViewInterface interface
     void DrawParticle(int index, EColor color, int x, int y);
@@ -15,6 +15,7 @@ public:
     char CheckKeyPress();
     void DrawScreen();
     int GetSide();
+    void ClearWindow();
 private:
     IPresenter& Presenter;
     int Side;

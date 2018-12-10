@@ -1,8 +1,9 @@
 #include "particlesviewsdladapter.h"
 #include "plugin/IPresenter.h"
 #include "plugin/RGBData.h"
+#include <chrono>
 
-particlesViewSdlAdapter::particlesViewSdlAdapter(IPresenter& presenter, int side)
+ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side)
     : Presenter(presenter)
     , Side(side)
 {
@@ -18,12 +19,25 @@ particlesViewSdlAdapter::particlesViewSdlAdapter(IPresenter& presenter, int side
     Presenter.Present();
 }
 
-void particlesViewSdlAdapter::DrawParticle(int /*index*/, EColor color, int x, int y)
+void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, EColor color, int x, int y)
 {
     DrawParticle(color, x, y);
 }
 
-void particlesViewSdlAdapter::DrawParticle(EColor color, int x, int y)
+void ParticlesViewSdlAdapter::ClearWindow()
+{
+    RGBData white (255,255,255,0);
+    for (int x = 0; x < Side; x++)
+    {
+        for (int y = 0; y < Side; y++)
+        {
+            Presenter.StoreRGBData(x, y, white);
+        }
+    }
+    Presenter.Present();
+}
+
+void ParticlesViewSdlAdapter::DrawParticle(EColor color, int x, int y)
 {
     RGBData colorData;
     switch (color)
@@ -65,17 +79,25 @@ void particlesViewSdlAdapter::DrawParticle(EColor color, int x, int y)
     Presenter.StoreRGBData(x+2, y+1, colorData);
 }
 
-void particlesViewSdlAdapter::DrawScreen()
+int count = 0;
+long long LastUpdate = 0;
+
+void ParticlesViewSdlAdapter::DrawScreen()
 {
-    Presenter.Present();
+    long long currentTime =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    if (currentTime - LastUpdate > 20)
+    {
+    	LastUpdate=currentTime;
+	Presenter.Present();
+    }
 }
 
-char particlesViewSdlAdapter::CheckKeyPress()
+char ParticlesViewSdlAdapter::CheckKeyPress()
 {
     return 0;
 }
 
-int particlesViewSdlAdapter::GetSide()
+int ParticlesViewSdlAdapter::GetSide()
 {
     return Side;
 }

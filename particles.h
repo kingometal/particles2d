@@ -22,12 +22,12 @@ public:
     void sleeps(clock_t wait);
 
 private:
-    void redrawV(int color);
-    void redrawV();
+    void RedrawV(int color);
+    void RedrawV();
     void RedrawParticleAtNewPosition(int index, double oldX, double oldY, double x, double y, double q);
     void RedrawParticleAtNewPosition(int index);
     void ApplyForce(int n1, int n2);
-    void collision(int n1, int n2);
+    void PerformCollision(int n1, int n2);
     void ResolveOverlapIfNeeded(int n1, int n2, double r);
     bool CheckCollisionImminent(int n1, int n2);
     bool CheckOverlap(int n1, int n2, double distance);
@@ -38,7 +38,7 @@ private:
     ParticlesViewInterface &W;
     IUserInput& UserInput;
 
-    const int NumParticles;
+    int NumParticles;
     Particle* ParticleN;
     double GravitationalConstant;
     double ElectrostaticConstant;
@@ -51,6 +51,10 @@ private:
     void UpdateParticlesPositionsAndDraw();
     void ResetParticlesForces();
     void UpdateParticlesForcesAndVelocities();
+    void AddParticle(int x, int y, double dx, double dy);
+    bool RemoveParticle(int x, int y);
+    void RemoveParticle(int index);
+    int GetClosestParticle(int x, int y);
 };
 
 #endif

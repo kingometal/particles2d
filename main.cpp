@@ -6,12 +6,12 @@
 #include "plugin/UserInput.h"
 #include <iostream>
 
-//#define USE_SDL
+#define USE_SDL
 
 int main(void){
 #ifdef USE_SDL
     DemoPresenter* presenter = new DemoPresenter();
-    ParticlesViewInterface* view = new particlesViewSdlAdapter(*presenter, WINDOW_SIDE);
+    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, WINDOW_SIDE);
     UserInput* userInput = new UserInput();
 #else
     ParticlesView* view = new ParticlesView(WINDOW_SIDE);

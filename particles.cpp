@@ -71,7 +71,7 @@ bool Particles::CheckCollisionImminent(int n1, int n2){
 
 void Particles::ResolveOverlapIfNeeded(int n1, int n2, double r){
     if (CheckOverlap(n1, n2, r)){
-//        cout << "overlap" << endl;
+        //        cout << "overlap" << endl;
 
         double x1 = ParticleN[n1].GetXPosition();
         double x2 = ParticleN[n2].GetXPosition();
@@ -91,7 +91,7 @@ void Particles::ResolveOverlapIfNeeded(int n1, int n2, double r){
     }
 }
 
-void Particles::collision (int n1, int n2){
+void Particles::PerformCollision (int n1, int n2){
 
     double tanr = (ParticleN[n1].GetYPosition()-ParticleN[n2].GetYPosition())/(ParticleN[n1].GetXPosition() - ParticleN[n2].GetXPosition());
     double cosr = 1/sqrt(tanr*tanr + 1.0);
@@ -235,16 +235,16 @@ void Particles::RedrawParticleAtNewPosition(int index)
     RedrawParticleAtNewPosition(index, ParticleN[index].GetSavedXPosition(), ParticleN[index].GetSavedYPosition(), ParticleN[index].GetXPosition(), ParticleN[index].GetYPosition(), Charge(index));
 }
 
-void Particles::redrawV(){
-//    W.Black();
-//    W.DrawLine (x, y, x+vx*100, y+vy*100);
+void Particles::RedrawV(){
+    //    W.Black();
+    //    W.DrawLine (x, y, x+vx*100, y+vy*100);
 }
 
-void Particles::redrawV(int color){
-//    W.Black();
-//    if (color ==0) W.White();
-//    W.DrawLine (x, y, x+vx*100, y+vy*100);
-//    W.Black();
+void Particles::RedrawV(int color){
+    //    W.Black();
+    //    if (color ==0) W.White();
+    //    W.DrawLine (x, y, x+vx*100, y+vy*100);
+    //    W.Black();
 }
 
 void Particles::sleeps( clock_t wait ){
@@ -255,6 +255,7 @@ void Particles::sleeps( clock_t wait ){
 
 void Particles::Init(void){
     InitRandom();
+    W.ClearWindow();
     double R =  RADIUS;
     int Mid = L/2;
     for (int n = 0; n<NumParticles; n++){
@@ -275,15 +276,87 @@ void Particles::Init(void){
     W.DrawScreen();
 }
 
+void Particles::AddParticle(int x, int y, double dx, double dy)
+{
+    Particle* tempParticlesN = new Particle[NumParticles + 1];
+    for (int i = 0; i < NumParticles; i++)
+    {
+        tempParticlesN[i] = ParticleN[i];
+    }
+    tempParticlesN[NumParticles].SetCharge(0);
+    tempParticlesN[NumParticles].SetForce(0,0);
+    tempParticlesN[NumParticles].SetMass(MASS);
+    tempParticlesN[NumParticles].SetPosition(x,y);
+    tempParticlesN[NumParticles].SetRadius(RADIUS);
+    tempParticlesN[NumParticles].SetVelocity(dx/500.0,dy/500.0);
+    delete [] ParticleN;
+    ParticleN = tempParticlesN;
+    NumParticles++;
+}
+
+int Particles::GetClosestParticle(int x, int y)
+{
+    int closestParticle = -1;
+    double shortestDistance = MAXFLOAT;
+    for (int i = 0; i < NumParticles; i++)
+    {
+        double distance = sqrt( pow(x-ParticleN[i].GetXPosition(),2)+pow(y-ParticleN[i].GetYPosition(),2));
+        if (distance < shortestDistance)
+        {
+            closestParticle = i;
+            shortestDistance = distance;
+        }
+    }
+    return closestParticle;
+}
+
+void Particles::RemoveParticle(int index)
+{
+    Particle* tempParticlesN = new Particle[NumParticles - 1];
+    int j = 0;
+    for (int i = 0; i < NumParticles-1; i++)
+    {
+        if (i == index)
+        {
+            j++;
+        }
+        tempParticlesN[i] = ParticleN[j];
+        j++;
+
+    }
+    delete [] ParticleN;
+    ParticleN = tempParticlesN;
+    NumParticles--;
+}
+
+bool Particles::RemoveParticle(int x, int y)
+{
+    bool removed = false;
+    if (NumParticles > 0)
+    {
+        int closestParticle = GetClosestParticle(x,y);
+        double distance = sqrt( pow(x-ParticleN[closestParticle].GetXPosition(),2)+pow(y-ParticleN[closestParticle].GetYPosition(),2));
+        if (distance < ATOMIC_RADIUS)
+        {
+            W.DrawParticle(closestParticle, White, ParticleN[closestParticle].GetSavedXPosition(), ParticleN[closestParticle].GetSavedYPosition());
+            RemoveParticle(closestParticle);
+            W.ClearWindow();
+            removed = true;
+            cout << "removed" << endl;
+        }
+    }
+    return removed;
+}
+
 
 void Particles::Update(){
     ResetParticlesForces();
     UpdateParticlesForcesAndVelocities();
+    HandleKeyPress();
 #if CHECK_COLLISIONS
     AvoidCollisions();
 #endif
     UpdateParticlesPositionsAndDraw();
-    HandleKeyPress();
     W.DrawScreen();
 }
 
@@ -329,7 +402,7 @@ void Particles::AvoidCollisions()
             ResolveOverlapIfNeeded(n1,n2, distance);
             if (CheckCollisionImminent(n1, n2))
             {
-                collision(n1, n2);
+                PerformCollision(n1, n2);
                 ParticleN[n1].SetForce(0.0,0.0);
                 ParticleN[n2].SetForce(0.0,0.0);
                 ApplyForce(n1, n2);
@@ -343,10 +416,21 @@ void Particles::AvoidCollisions()
 void Particles::HandleKeyPress()
 {
     char check = UserInput.CheckKeyPress();
+    MouseClick click = UserInput.CheckMouseClick();
+    if (click.click)
+    {
+        cout << "click" << endl;
+        if (! RemoveParticle(click.x*2, click.y*2))
+        {
+            AddParticle(click.x*2, click.y*2, click.dx, click.dy);
+        }
+    }
     if (check != 0 && check != '0')
     {
         cout << check << endl;
     }
+    if (check =='r') {Init();  cout << "Reset" << endl;}
+    if (check =='a') {RemoveParticle(ParticleN[NumParticles-1].GetXPosition(), ParticleN[NumParticles-1].GetYPosition());  cout << "Remove particle" << endl;}
     if (check =='-') {GravitationalConstant /= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.0;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='+') {GravitationalConstant *= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.00000000001;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='1') {ElectrostaticConstant /= 2; if (ElectrostaticConstant < 0.000000000001) ElectrostaticConstant = 0.0;  cout << "E =" << ElectrostaticConstant << endl;}
