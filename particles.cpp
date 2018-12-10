@@ -420,9 +420,9 @@ void Particles::HandleKeyPress()
     if (click.click)
     {
         cout << "click" << endl;
-        if (! RemoveParticle(click.x*2, click.y*2))
+        if (! RemoveParticle(click.x*ZOOM, click.y*ZOOM))
         {
-            AddParticle(click.x*2, click.y*2, click.dx, click.dy);
+            AddParticle(click.x*ZOOM, click.y*ZOOM, click.dx, click.dy);
         }
     }
     if (check != 0 && check != '0')
