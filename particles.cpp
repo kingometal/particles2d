@@ -269,7 +269,7 @@ void Particles::Init(void){
         ParticleN[n].SetVelocity(-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));//0.323478
         ParticleN[n].SetForce(0.0, 0.0);
         ParticleN[n].SetRadius(R);
-        cout << "n: " <<  n << " M:" << ParticleN[n].GetMass() << " Q:" << ParticleN[n].GetCharge() << " R:" << ParticleN[n].GetRadius()<< endl;
+//        cout << "n: " <<  n << " M:" << ParticleN[n].GetMass() << " Q:" << ParticleN[n].GetCharge() << " R:" << ParticleN[n].GetRadius()<< endl;
 
         RedrawParticleAtNewPosition(n, ParticleN[n].GetXPosition(), ParticleN[n].GetYPosition(), ParticleN[n].GetXPosition(), ParticleN[n].GetYPosition(), ParticleN[n].GetCharge());
     }
@@ -342,12 +342,11 @@ bool Particles::RemoveParticle(int x, int y)
             RemoveParticle(closestParticle);
             W.ClearWindow();
             removed = true;
-            cout << "removed" << endl;
+//            cout << "removed" << endl;
         }
     }
     return removed;
 }
-
 
 void Particles::Update(){
     ResetParticlesForces();
@@ -419,7 +418,6 @@ void Particles::HandleKeyPress()
     MouseClick click = UserInput.CheckMouseClick();
     if (click.click)
     {
-        cout << "click" << endl;
         if (! RemoveParticle(click.x*ZOOM, click.y*ZOOM))
         {
             AddParticle(click.x*ZOOM, click.y*ZOOM, click.dx, click.dy);
@@ -430,7 +428,7 @@ void Particles::HandleKeyPress()
         cout << check << endl;
     }
     if (check =='r') {Init();  cout << "Reset" << endl;}
-    if (check =='a') {RemoveParticle(ParticleN[NumParticles-1].GetXPosition(), ParticleN[NumParticles-1].GetYPosition());  cout << "Remove particle" << endl;}
+    if (check =='a') {RemoveParticle(ParticleN[NumParticles-1].GetXPosition(), ParticleN[NumParticles-1].GetYPosition());  cout << "Removed particle" << endl;}
     if (check =='-') {GravitationalConstant /= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.0;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='+') {GravitationalConstant *= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.00000000001;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='1') {ElectrostaticConstant /= 2; if (ElectrostaticConstant < 0.000000000001) ElectrostaticConstant = 0.0;  cout << "E =" << ElectrostaticConstant << endl;}
