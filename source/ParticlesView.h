@@ -1,9 +1,9 @@
 #ifndef PARTICLESVIEW_H
 #define PARTICLESVIEW_H
 
-#include "particlesviewinterface.h"
-#include "xwindows.h"
-#include "plugin/IUserInput.h"
+#include "interfaces/ParticlesViewInterface.h"
+#include "XWindows.h"
+#include "interfaces/IUserInput.h"
 
 class ParticlesView: public ParticlesViewInterface, public XWindow, public IUserInput
 {
@@ -18,6 +18,8 @@ public:
     bool IsQuitRequested();
     int GetSide();
     void DrawScreen();
+    MouseClick CheckMouseClick();
+    void ClearWindow();
 
 private:
     void SetColor(EColor color);

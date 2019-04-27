@@ -1,11 +1,11 @@
-#include "particles.h"
-#include "particle.h"
-#include "constants.h"
-#include "include/rnd.h"
+#include "Particles.h"
+#include "Particle.h"
+#include "Constants.h"
+#include "interfaces/Rnd.h"
 #include <iostream>
-#include "plugin/IUserInput.h"
+#include "interfaces/IUserInput.h"
 #include <cmath>
-#include "particlesviewinterface.h"
+#include "interfaces/ParticlesViewInterface.h"
 
 
 Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput):
@@ -297,7 +297,7 @@ void Particles::AddParticle(int x, int y, double dx, double dy)
 int Particles::GetClosestParticle(int x, int y)
 {
     int closestParticle = -1;
-    double shortestDistance = MAXFLOAT;
+    double shortestDistance = MAX_FLOAT;
     for (int i = 0; i < NumParticles; i++)
     {
         double distance = sqrt( pow(x-ParticleN[i].GetXPosition(),2)+pow(y-ParticleN[i].GetYPosition(),2));

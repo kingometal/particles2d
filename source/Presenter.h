@@ -1,12 +1,12 @@
-#ifndef DEMO_PRESENTER_H
-#define DEMO_PRESENTER_H
-#include "IPresenter.h"
+#ifndef PRESENTER_H
+#define PRESENTER_H
+#include "interfaces/IPresenter.h"
 
-class DemoPresenter: public IPresenter
+class Presenter: public IPresenter
 {
 public:
-    DemoPresenter();
-    ~DemoPresenter();
+    Presenter();
+    ~Presenter();
 
     // IPresenter interface
     void StoreRGBData(int x, int y, const RGBData &data);
@@ -14,8 +14,8 @@ public:
     void Init(int height, int width, bool resizable);
     void ClearWindow(RGBData& color);
 private:
-    class DemoPresenterImpl;
-    DemoPresenterImpl* Pimpl;
+    class PresenterImpl;
+    PresenterImpl* Pimpl;
 };
 
 #endif // DEMO_PRESENTER_H

@@ -5,9 +5,8 @@
 #define ELECTRO 0.1
 #define MAGNETI 0.1
 #define ATOMIC 0.001
-#define DISSIPATION_PERCENT 0.001
+#define DISSIPATION_PERCENT 0.0001
 
-//#define ATOMIC_CONSTANT 0.1
 #define ATOMIC_RADIUS 20.0
 
 #define PARTICLE_COUNT 50
@@ -21,5 +20,6 @@
 
 #define CHECK_COLLISIONS 0
 
+#define MAX_FLOAT	3.40282347e+38F
 
 #endif // CONSTANTS_H

@@ -1,6 +1,6 @@
 #ifndef USERINPUT_H
 #define USERINPUT_H
-#include "IUserInput.h"
+#include "interfaces/IUserInput.h"
 
 class UserInput: public IUserInput
 {

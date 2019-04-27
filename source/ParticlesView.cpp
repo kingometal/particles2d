@@ -1,8 +1,9 @@
-#include "particlesview.h"
+#include "ParticlesView.h"
 
 ParticlesView::ParticlesView(int side)
     : ParticlesViewInterface()
     , XWindow()
+    , IUserInput()
     , Side(side)
 {
     XWindow::Open(Side,Side,"Particles");
@@ -87,5 +88,17 @@ int ParticlesView::GetSide()
 void ParticlesView::DrawScreen()
 {
     // nothing to do
+}
+
+MouseClick ParticlesView::CheckMouseClick()
+{
+    MouseClick result;
+    result.click = false;
+    return result;
+}
+
+void ParticlesView::ClearWindow()
+{
+
 }
 

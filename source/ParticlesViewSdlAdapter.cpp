@@ -1,6 +1,6 @@
-#include "particlesviewsdladapter.h"
-#include "plugin/IPresenter.h"
-#include "plugin/RGBData.h"
+#include "ParticlesViewSdlAdapter.h"
+#include "interfaces/IPresenter.h"
+#include "RGBData.h"
 #include <chrono>
 
 ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side)

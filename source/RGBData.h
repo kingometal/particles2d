@@ -5,8 +5,6 @@ class RGBData
 {
 public:
     RGBData(char r, char g, char b, char alpha);
-//    RGBData(const RGBData& original);
-//    RGBData(const RGBData* original);
     RGBData& operator=(const RGBData& rhs);
     RGBData();
     ~RGBData();

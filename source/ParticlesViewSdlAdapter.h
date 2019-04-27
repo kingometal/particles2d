@@ -1,6 +1,6 @@
 #ifndef PARTICLESVIEWSDLADAPTER_H
 #define PARTICLESVIEWSDLADAPTER_H
-#include "particlesviewinterface.h"
+#include "interfaces/ParticlesViewInterface.h"
 
 class IPresenter;
 

@@ -1,5 +1,5 @@
-#include "particle.h"
-#include "constants.h"
+#include "Particle.h"
+#include "Constants.h"
 
 
 Particle::Particle(void){

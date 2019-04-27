@@ -9,7 +9,7 @@
 	SaveImage needs the command xgrabsc
 	CreateMovie needs jpeg2yuv and yuvscaler
 ***********************************************************************************/
-#include "xwindows.h"
+#include "XWindows.h"
 
 #include <iostream>
 #include <cstdio>
@@ -237,13 +237,13 @@ return true;
 
 bool XWindow::KeyIsPressed (void)
 {
-if (KeyPressed) return true;
-if (! XCheckTypedEvent(display,KeyPress,&event)) return false;
-int i; char text[10];	
-i=XLookupString((XKeyEvent *) &event, text, 10, &key, 0);
-if (i!=1) return false;;
-PressedKey=text[0]; KeyPressed=true;
-return true;
+    if (KeyPressed) return true;
+    if (! XCheckTypedEvent(display,KeyPress,&event)) return false;
+    int i; char text[10];
+    i=XLookupString((XKeyEvent *) &event, text, 10, &key, 0);
+    if (i!=1) return false;;
+    PressedKey=text[0]; KeyPressed=true;
+    return true;
 }
 
 
