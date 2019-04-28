@@ -10,29 +10,22 @@ class ParticleManager
 public:
     ParticleManager(int particleCount);
     ~ParticleManager();
-    void InitParticle(int index, Vector &position, Vector &velocity, double mass, double charge, double radius);
-    void AddParticle(Vector &position, Vector &velocity, double mass, double charge, double radius);
-    void RemoveParticle(int index);
+    int AddParticle(const Vector &position, const Vector &velocity, const double mass, const double charge, const double radius);
+    void RemoveParticle(const int index);
     void UpdateVelocity(const int index, const Vector &maxCoord, const double dissipation);
-    void UpdatePosition(int index);
-    void ResetForce(int index);
+    void UpdatePosition(const int index);
+    void ResetForce(const int index);
     void ResetForces();
-    void ChangeRadius(int index, double delta);
+    void AddForce(int index, double dfx, double dfy);
 
-    int PCount();
+    void ChangeRadius(const int index, const double delta);
+    void SetPosition(const int index, const Vector& newPosition);
 
-//    double Velocity(int index, int dim);
-//    double Position(int index, int dim);
-//    double Force(int index, int dim);
-    double Distance(int index1, int index2);
-//    double Radius(int index);
-//    double Mass(int index);
-//    double Charge(int index);
-    bool CheckCollisionImminent(int index1, int index2);
-    void ResolveOverlapIfNeeded(int index1, int index2, double distance);
+    int PCount() const;
+
+    double Distance(int index1, int index2) const;
     void PerformCollision(int index1, int index2);
 
-    void AddForce(int index, double dfx, double dfy);
     const Particle& P(int index);
 private:
     ParticleManagerImpl* Impl;

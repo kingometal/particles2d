@@ -29,6 +29,16 @@ public:
         return v[dim];
     }
 
+    inline double X() const
+    {
+        return v[0];
+    }
+
+    inline double Y() const
+    {
+        return v[1];
+    }
+
     inline void Set(const double x, const double y)
     {
         v[0] = x;
@@ -66,13 +76,6 @@ public:
         return temp;
     }
 
-    inline Vector& IncreaseCoordinate(const int dim, const double value)
-    {
-        v[dim] += value;
-        return *this;
-    }
-
-
     inline void Reset()
     {
         Set(0.0, 0.0);
@@ -84,7 +87,7 @@ public:
         v[1] = v2.v[1];
     }
 
-    inline double Abs()
+    inline double Abs() const
     {
         return sqrt(v[0] * v[0] + v[1] * v[1]);
     }

@@ -70,6 +70,9 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
             case SDLK_a:
                 LastKeyPressed = 'a';
                 break;
+            case SDLK_i:
+                LastKeyPressed = 'i';
+                break;
 
             }
         }

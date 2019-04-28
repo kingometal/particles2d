@@ -2,6 +2,8 @@
 #include "Particle.h"
 
 #include <cmath>
+#include <iostream>
+using namespace std;
 
 class ParticleManagerImpl
 {
@@ -14,20 +16,10 @@ public:
 
     ~ParticleManagerImpl()
     {
-
+        delete [] ParticleN;
     }
 
-    void InitParticle(int index, Vector& position, Vector& velocity, double mass, double charge, double radius)
-    {
-        ParticleN[index].Position = position;
-        ParticleN[index].Mass = mass;
-        ParticleN[index].Charge = charge;
-        ParticleN[index].Velocity = velocity;
-        ParticleN[index].Force.Set(0.0, 0.0);
-        ParticleN[index].Radius = radius;
-    }
-
-    void AddParticle(Vector& position, Vector& velocity, double mass, double charge, double radius)
+    int AddParticle(const Vector& position, const Vector& velocity, const double mass, const double charge, const double radius)
     {
         Particle* tempParticlesN = new Particle[ParticleCount + 1];
         for (int i = 0; i < ParticleCount; i++)
@@ -45,9 +37,10 @@ public:
         ParticleN[ParticleCount].Radius = radius;
 
         ParticleCount++;
+        return ParticleCount;
     }
 
-    void RemoveParticle(int index)
+    void RemoveParticle(const int index)
     {
         Particle* tempParticlesN = new Particle[ParticleCount - 1];
         int j = 0;
@@ -64,29 +57,6 @@ public:
         delete [] ParticleN;
         ParticleN = tempParticlesN;
         ParticleCount--;
-    }
-
-    void UpdateVelocity(const int index, const Vector &maxCoord, const double dissipation)
-    {
-        double acceleration;
-        double nextPossiblePosition;
-        Particle & p = ParticleN[index];
-
-        for (int n = 0 ; n < 2 ;n++)
-        {
-            acceleration = p.Force.Get(n) * p.ReciMass;
-            nextPossiblePosition = p.Position.Get(n) + p.Velocity.Get(n) + acceleration;
-            if (nextPossiblePosition >= maxCoord.Get(n) || nextPossiblePosition < 0)
-            {
-                p.Velocity.v[n] = -p.Velocity.v[n];
-            }
-            else
-            {
-                p.Velocity.v[n] += acceleration;
-            }
-        }
-
-        p.Velocity = p.Velocity * (1 - dissipation);
     }
 
     void UpdatePosition(int index)
@@ -116,83 +86,39 @@ public:
         }
     }
 
-    double Distance(int index1, int index2)
-    {
-        return (ParticleN[index2].Position - ParticleN[index1].Position).Abs();
-    }
-
-    bool CheckCollisionImminent(int index1, int index2)
-    {
-    //    return Impl->ParticleN[index1].CheckCollisionImminent(Impl->ParticleN[index2]);
-        return ((ParticleN[index2].Position + ParticleN[index2].Velocity) - (ParticleN[index1].Position + ParticleN[index1].Velocity)).Abs() < ParticleN[index2].Radius + ParticleN[index1].Radius;
-    }
-
-    bool CheckOverlap(int index1, int index2, double distance)
-    {
-        return distance < ParticleN[index1].Radius + ParticleN[index2].Radius;
-    }
-
-    void ResolveOverlapIfNeeded(int index1, int index2, double distance)
-    {
-        if (CheckOverlap(index1, index2, distance)){
-            double x1 = ParticleN[index1].Position.v[0];
-            double x2 = ParticleN[index2].Position.v[0];
-            double y1 = ParticleN[index1].Position.v[1];
-            double y2 = ParticleN[index2].Position.v[1];
-
-            double rx = x2 - x1;
-            double ry = y2 - y1;
-            double cm = (ParticleN[index2].Mass*distance)/(ParticleN[index2].Mass + ParticleN[index1].Mass);  //center of mass
-            double cmx = x1 + rx*cm/distance;
-            double cmy = y1 + ry*cm/distance;
-
-            double R = ParticleN[index1].Radius + ParticleN[index2].Radius;
-            double quot = R/distance;
-            ParticleN[index2].Position.Set((x2-cmx)*quot + cmx, (y2-cmy)*quot + cmy);
-            ParticleN[index1].Position.Set((x1-cmx)*quot + cmx, (y1-cmy)*quot + cmy);
-        }
-    }
-
-    inline double OneDcollision(double v, double v2, double m, double m2){
+    inline double OneDcollision(double v, double v2, double m, double m2) const
+    { // returns final velocity of the particle 1 after collision with particle 2
         return (2.0 * m2 * v2   + (m - m2)* v) / (m + m2);
     }
 
-    void PerformCollision (int index1, int index2){
-        Vector distance = ParticleN[index1].Position - ParticleN[index2].Position;
+    void PerformCollision (int index1, int index2)
+    {
+        Particle& p1 = ParticleN[index1];
+        Particle& p2 = ParticleN[index2];
+        Vector distance = p1.Position - p2.Position;
         double tanr = (distance.Get(1) / distance.Get(0));
         double cosr = 1/sqrt(tanr*tanr + 1.0);
         double sinr = tanr*cosr;
 
-        if (ParticleN[index1].Position.Get(0) - ParticleN[index2].Position.Get(0) == 0.0) {
-            tanr = 0.0;
+        if (p1.Position.Get(0) - p2.Position.Get(0) == 0.0)
+        {
             cosr = 0.0;
             sinr = 1.0;
         }
 
-        double vRotatedx1 = cosr * ParticleN[index1].Velocity.Get(0) + sinr * ParticleN[index1].Velocity.Get(1);
-        double vRotatedy1 = cosr * ParticleN[index1].Velocity.Get(1) - sinr * ParticleN[index1].Velocity.Get(0);
-        double vRotatedx2 = cosr * ParticleN[index2].Velocity.Get(0) + sinr * ParticleN[index2].Velocity.Get(1);
-        double vRotatedy2 = cosr * ParticleN[index2].Velocity.Get(1) - sinr * ParticleN[index2].Velocity.Get(0);
+        // rotate both particle positions so that their connection is parallel to the X axis
+        Vector vRotated1 (p1.Velocity * cosr + Vector (sinr * p1.Velocity.Y(), - sinr * p1.Velocity.X()));
+        Vector vRotated2 (p2.Velocity * cosr + Vector (sinr * p2.Velocity.Y(), - sinr * p2.Velocity.X()));
 
-        double vGedrehttemp = vRotatedx1;
-        vRotatedx1 = OneDcollision (vRotatedx1, vRotatedx2, ParticleN[index1].Mass, ParticleN[index2].Mass);
-        vRotatedx2 = OneDcollision (vRotatedx2, vGedrehttemp, ParticleN[index2].Mass, ParticleN[index1].Mass);
+        cout << "x, y " << (vRotated2 - vRotated1).X() << " : " << (vRotated2 - vRotated1).Y() << endl;
+        // perform collision along the X axis
+        double vRotatedTempX = vRotated1.X();
+        vRotated1.v[0] = OneDcollision (vRotated1.X(), vRotated2.X(), p1.Mass, p2.Mass);
+        vRotated2.v[0] = OneDcollision (vRotated2.X(), vRotatedTempX, p2.Mass, p1.Mass);
 
-        vGedrehttemp = vRotatedx1;
-        vRotatedx1 = cosr * vRotatedx1 - sinr * vRotatedy1;
-        vRotatedy1 = cosr * vRotatedy1 + sinr * vGedrehttemp;
-        vGedrehttemp = vRotatedx2;
-        vRotatedx2 = cosr * vRotatedx2 - sinr * vRotatedy2;
-        vRotatedy2 = cosr * vRotatedy2 + sinr * vGedrehttemp;
-
-        ParticleN[index1].Velocity.Set(vRotatedx1, vRotatedy1);
-        ParticleN[index2].Velocity.Set(vRotatedx2, vRotatedy2);
-    }
-
-    void AddForce(int index, double dfx, double dfy)
-    {
-        Vector df (dfx, dfy);
-        ParticleN[index].Force += df;
+        // rotate both particle positions back
+        p1.Velocity = vRotated1 * cosr + Vector (- sinr * vRotated1.Y(), sinr * vRotated1.X());
+        p2.Velocity = vRotated2 * cosr + Vector (- sinr * vRotated2.Y(), sinr * vRotated2.X());
     }
 
     int ParticleCount;
@@ -204,7 +130,6 @@ public:
 ParticleManager::ParticleManager(int particleCount)
     : Impl(new ParticleManagerImpl(particleCount))
 {
-
 }
 
 ParticleManager::~ParticleManager()
@@ -212,32 +137,46 @@ ParticleManager::~ParticleManager()
     delete Impl;
 }
 
-void ParticleManager::InitParticle(int index, Vector& position, Vector& velocity, double mass, double charge, double radius)
-{
-    Impl->InitParticle(index, position, velocity, mass, charge, radius);
-}
-
-void ParticleManager::AddParticle(Vector& position, Vector& velocity, double mass, double charge, double radius)
+int ParticleManager::AddParticle(const Vector& position, const Vector& velocity, const double mass, const double charge, const double radius)
 {
     Impl->AddParticle(position, velocity, mass, charge, radius);
 }
 
-void ParticleManager::RemoveParticle(int index)
+void ParticleManager::RemoveParticle(const int index)
 {
     Impl->RemoveParticle(index);
 }
 
 void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, const double dissipation)
 {
-    Impl->UpdateVelocity(index, maxCoord, dissipation);
+    double acceleration;
+    double nextPossiblePosition;
+    Particle & p = Impl->ParticleN[index];
+
+    for (int n = 0 ; n < 2 ;n++)
+    {
+        acceleration = p.Force.Get(n) * p.ReciMass;
+        nextPossiblePosition = p.Position.Get(n) + p.Velocity.Get(n) + acceleration;
+        if (nextPossiblePosition >= maxCoord.Get(n) || nextPossiblePosition < 0)
+        {
+            p.Velocity.v[n] = -p.Velocity.v[n];
+        }
+        else
+        {
+            p.Velocity.v[n] += acceleration;
+        }
+    }
+
+    p.Velocity = p.Velocity * (1 - dissipation);
+
 }
 
-void ParticleManager::UpdatePosition(int index)
+void ParticleManager::UpdatePosition(const int index)
 {
     Impl->UpdatePosition(index);
 }
 
-void ParticleManager::ResetForce(int index)
+void ParticleManager::ResetForce(const int index)
 {
     Impl->ParticleN[index].Force.Reset();
 }
@@ -247,12 +186,17 @@ void ParticleManager::ResetForces()
     Impl->ResetForces();
 }
 
-void ParticleManager::ChangeRadius(int index, double delta)
+void ParticleManager::ChangeRadius(const int index, const double delta)
 {
     Impl->ChangeRadius(index, delta);
 }
 
-int ParticleManager::PCount()
+void ParticleManager::SetPosition(const int index, const Vector &newPosition)
+{
+    Impl->ParticleN[index].Position = newPosition;
+}
+
+int ParticleManager::PCount() const
 {
     return Impl->ParticleCount;
 }
@@ -262,19 +206,9 @@ const Particle &ParticleManager::P(int index)
     return Impl->ParticleN[index];
 }
 
-double ParticleManager::Distance(int index1, int index2)
+double ParticleManager::Distance(int index1, int index2) const
 {
     return (Impl->ParticleN[index2].Position - Impl->ParticleN[index1].Position).Abs();
-}
-
-bool ParticleManager::CheckCollisionImminent(int index1, int index2)
-{
-    return Impl->CheckCollisionImminent(index1, index2);
-}
-
-void ParticleManager::ResolveOverlapIfNeeded(int index1, int index2, double distance)
-{
-    Impl->ResolveOverlapIfNeeded(index1, index2, distance);
 }
 
 void ParticleManager::PerformCollision (int index1, int index2){
@@ -284,5 +218,6 @@ void ParticleManager::PerformCollision (int index1, int index2){
 
 void ParticleManager::AddForce(int index, double dfx, double dfy)
 {
-    Impl->AddForce(index, dfx, dfy);
+    Vector df (dfx, dfy);
+    Impl->ParticleN[index].Force += df;
 }
