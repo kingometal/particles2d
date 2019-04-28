@@ -1,17 +1,19 @@
 #include "ParticlesViewSdlAdapter.h"
 #include "interfaces/IPresenter.h"
+#include "Constants.h"
 #include "RGBData.h"
 #include <chrono>
 
-ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side)
+ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY)
     : Presenter(presenter)
-    , Side(side)
+    , SideX(sideX)
+    , SideY(sideY)
 {
-    Presenter.Init(side, side, false);
+    Presenter.Init(sideY, sideX, false);
     RGBData colorData(255,255,255,0);
-    for (int x = 0; x < side; x++)
+    for (int x = 0; x < sideX; x++)
     {
-        for (int y = 0; y < side; y++)
+        for (int y = 0; y < sideY; y++)
         {
             Presenter.StoreRGBData(x, y, colorData);
         }
@@ -27,9 +29,9 @@ void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, EColor color, int x, i
 void ParticlesViewSdlAdapter::ClearWindow()
 {
     RGBData white (255,255,255,0);
-    for (int x = 0; x < Side; x++)
+    for (int x = 0; x < SideX; x++)
     {
-        for (int y = 0; y < Side; y++)
+        for (int y = 0; y < SideY; y++)
         {
             Presenter.StoreRGBData(x, y, white);
         }
@@ -84,21 +86,21 @@ long long LastUpdate = 0;
 
 void ParticlesViewSdlAdapter::DrawScreen()
 {
-    long long currentTime =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    if (currentTime - LastUpdate > 20)
-    {
-    	LastUpdate=currentTime;
-	Presenter.Present();
-    }
+//    long long currentTime =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+//    if (currentTime - LastUpdate > 20)
+//    {
+//        LastUpdate=currentTime;
+        Presenter.Present(MAX_FPS);
+//    }
 }
 
-char ParticlesViewSdlAdapter::CheckKeyPress()
+int ParticlesViewSdlAdapter::GetSideX()
 {
-    return 0;
+    return SideX;
 }
 
-int ParticlesViewSdlAdapter::GetSide()
+int ParticlesViewSdlAdapter::GetSideY()
 {
-    return Side;
+    return SideY;
 }
 

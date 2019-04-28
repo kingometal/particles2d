@@ -19,7 +19,8 @@ public:
     virtual void DrawParticle(int index, EColor color, int x, int y) = 0;
     virtual void DrawParticle(EColor color, int x, int y) = 0;
     virtual void DrawScreen() = 0;
-    virtual int GetSide() = 0;
+    virtual int GetSideX() = 0;
+    virtual int GetSideY() = 0;
     virtual void ClearWindow() = 0;
 
 };

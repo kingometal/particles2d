@@ -7,6 +7,7 @@
 class Particle;
 class ParticlesViewInterface;
 class IUserInput;
+class ParticleManager;
 
 class Particles{
 public:
@@ -19,42 +20,31 @@ public:
     double eKin();
     double eMol();
     double eG();
-    void sleeps(clock_t wait);
+    void Sleep(clock_t wait);
 
 private:
     void RedrawV(int color);
     void RedrawV();
     void RedrawParticleAtNewPosition(int index, double oldX, double oldY, double x, double y, double q);
-    void RedrawParticleAtNewPosition(int index);
     void ApplyForce(int n1, int n2);
-    void PerformCollision(int n1, int n2);
-    void ResolveOverlapIfNeeded(int n1, int n2, double r);
-    bool CheckCollisionImminent(int n1, int n2);
-    bool CheckOverlap(int n1, int n2, double distance);
-    double getR(int n1, int n2);
-    double oneDcollision(double v, double v2, double m, double m2);
 
-    const int L;
     ParticlesViewInterface &W;
     IUserInput& UserInput;
+    ParticleManager* PManager;
 
-    int NumParticles;
-    Particle* ParticleN;
     double GravitationalConstant;
     double ElectrostaticConstant;
     const double MagneticPermeability;
     double MolecularBondingEnergy;
+    double BorderDimensions[2];
     void HandleKeyPress();
-    double Mass(int n);
-    double Charge(int n);
     void AvoidCollisions();
     void UpdateParticlesPositionsAndDraw();
-    void ResetParticlesForces();
     void UpdateParticlesForcesAndVelocities();
     void AddParticle(int x, int y, double dx, double dy);
     bool RemoveParticle(int x, int y);
-    void RemoveParticle(int index);
     int GetClosestParticle(int x, int y);
+    void UpdateParticleSpeed(int n);
 };
 
 #endif

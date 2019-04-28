@@ -29,9 +29,10 @@ public:
     {
         SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
         double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-        if (maxFps == 0 || secondsCounter - lastFPSOutputTime > 0.01)
+        double fps = 1.0/(secondsCounter - lastFPSOutputTime);
+
+        if (0 == maxFps || fps < maxFps)
         {
-            int fps = 1/(secondsCounter - lastFPSOutputTime);
             PrintText(renderer, std::to_string(fps).c_str(), fontColor, font, 0,0 );
             SDL_RenderPresent(renderer);
             lastFPSOutputTime = secondsCounter;

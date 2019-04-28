@@ -7,7 +7,7 @@
 int main(void)
 {
     Presenter* presenter = new Presenter();
-    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, WINDOW_SIDE);
+    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, WINDOW_SIDE, WINDOW_SIDE);
     UserInput* userInput = new UserInput();
     Particles Ps(*view, *userInput);
     Ps.Init();
