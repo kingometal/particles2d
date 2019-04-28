@@ -2,6 +2,7 @@
 #define PARTICLES_H
 
 #include <ctime>
+#include "Vector.h"
 
 
 class Particle;
@@ -36,7 +37,7 @@ private:
     double ElectrostaticConstant;
     const double MagneticPermeability;
     double MolecularBondingEnergy;
-    double BorderDimensions[2];
+    Vector BorderDimensions;
     void HandleKeyPress();
     void AvoidCollisions();
     void UpdateParticlesPositionsAndDraw();

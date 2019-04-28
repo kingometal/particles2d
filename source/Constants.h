@@ -20,7 +20,7 @@
 
 #define ZOOM 2.0
 
-#define CHECK_COLLISIONS 0
+#define CHECK_COLLISIONS 1
 
 #define MAX_FLOAT	3.40282347e+38F
 

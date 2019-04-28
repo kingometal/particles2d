@@ -6,6 +6,8 @@
 #include "interfaces/IUserInput.h"
 #include <cmath>
 #include "interfaces/ParticlesViewInterface.h"
+#include "Vector.h"
+#include "Particle.h"
 #include <iostream>
 
 
@@ -18,8 +20,7 @@ Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput):
     MagneticPermeability(MAGNETI),
     MolecularBondingEnergy(ATOMIC)
 {
-    BorderDimensions[0] = (window.GetSideX()*ZOOM);
-    BorderDimensions[1] = (window.GetSideY()*ZOOM);
+    BorderDimensions.Set(window.GetSideX()*ZOOM, window.GetSideY()*ZOOM);
 }
 
 Particles::~Particles()
@@ -29,8 +30,8 @@ Particles::~Particles()
 
 void Particles::ApplyForce(int n1, int n2){
     double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0, fTotX = 0.0, fTotY = 0.0;
-    double dx = PManager->Position(n1,0) - PManager->Position(n2,0);
-    double dy = PManager->Position(n1,1) - PManager->Position(n2,1);
+    double dx = PManager->P(n1).Position.Get(0) - PManager->P(n2).Position.Get(0);
+    double dy = PManager->P(n1).Position.Get(1) - PManager->P(n2).Position.Get(1);
     double distance = sqrt (dx * dx + dy * dy);
     double reziR = 1.0 / distance;
     double reziR3 = reziR * reziR * reziR;
@@ -38,17 +39,17 @@ void Particles::ApplyForce(int n1, int n2){
 
     // Gravity
     {
-        double pot = - GravitationalConstant * PManager->Mass(n1) * PManager->Mass(n2) * reziR3;
+        double pot = - GravitationalConstant * PManager->P(n1).Mass * PManager->P(n2).Mass * reziR3;
         fgx = pot*dx;
         fgy = pot*dy;
     }
 
     // Coulomb and Lorentz
     {
-        double pot = PManager->Charge(n1) * PManager->Charge(n2)*reziR3;
-        double lorentz = PManager->Velocity(n2,0) * dy - PManager->Velocity(n2,1)*dx;
-        fcx = pot * (ElectrostaticConstant*dx + MagneticPermeability * PManager->Velocity(n1,1)*lorentz );
-        fcy = pot * (ElectrostaticConstant*dy - MagneticPermeability * PManager->Velocity(n1,0)*lorentz );
+        double pot = PManager->P(n1).Charge * PManager->P(n2).Charge * reziR3;
+        double lorentz = PManager->P(n2).Velocity.Get(0) * dy - PManager->P(n2).Velocity.Get(1) * dx;
+        fcx = pot * (ElectrostaticConstant * dx + MagneticPermeability * PManager->P(n1).Velocity.Get(1) * lorentz );
+        fcy = pot * (ElectrostaticConstant  *dy - MagneticPermeability * PManager->P(n1).Velocity.Get(0) * lorentz );
     }
 
     // Lennard-Jones Potential Force
@@ -154,32 +155,29 @@ void Particles::Init(void){
     InitRandom();
     W.ClearWindow();
     double R =  RADIUS;
-    int MidX = BorderDimensions[0]/2;
-    int MidY = BorderDimensions[1]/2;
+    int MidX = BorderDimensions.Get(0)/2;
+    int MidY = BorderDimensions.Get(1)/2;
     for (int n = PManager->PCount() - 1; n >= 0; --n){
         int positiveOrNegative = n%2 == 0 ? -1 : 1;
         double distance = 30.0;
-        double position[2];
-        position [0] = MidX + pow(n, 1.0/3.0)*distance*ZOOM*sin(n);
-        position [1] = MidY + pow(n, 1.0/3.0)*distance*ZOOM*cos(n);
-        double velocity[2];
+        Vector position;
+        position.v[0] = MidX + pow(n, 1.0/3.0)*distance*ZOOM*sin(n);
+        position.v[1] = MidY + pow(n, 1.0/3.0)*distance*ZOOM*cos(n);
+        Vector velocity;
         double speedRange =  0.01;
-        velocity[0] = -0.5*speedRange+rnd(speedRange);
-        velocity[1] = - 0.5 * speedRange+rnd(speedRange);
+        velocity.v[0] = -0.5*speedRange+rnd(speedRange);
+        velocity.v[1] = - 0.5 * speedRange+rnd(speedRange);
         PManager->InitParticle(n, position, velocity, MASS, positiveOrNegative * CHARGE, RADIUS);
-        RedrawParticleAtNewPosition(n, PManager->Position(n,0), PManager->Position(n,1), PManager->Position(n,0), PManager->Position(n,1), PManager->Charge(n));
+        const Particle& p = PManager->P(n);
+        RedrawParticleAtNewPosition(n, p.Position.Get(0), p.Position.Get(1), p.Position.Get(0), p.Position.Get(1), p.Charge);
     }
     W.DrawScreen();
 }
 
 void Particles::AddParticle(int x, int y, double dx, double dy)
 {
-    double position[2];
-    position [0] = x;
-    position [1] = y;
-    double velocity[2];
-    velocity[0] = dx/500.0;
-    velocity[1] = dy/500.0;
+    Vector position(x,y);
+    Vector velocity(dx/500.0, dy/500.0);
     PManager->AddParticle(position, velocity, MASS, 0, RADIUS);
 }
 
@@ -187,9 +185,10 @@ int Particles::GetClosestParticle(int x, int y)
 {
     int closestParticle = -1;
     double shortestDistance = MAX_FLOAT;
+    Vector position(x,y);
     for (int i = PManager->PCount() -  1; i >= 0; --i)
     {
-        double distance = sqrt( pow(x - PManager->Position(i,0),2)+pow( y - PManager->Position(i,1),2));
+        double distance = (position - PManager->P(i).Position).Abs();
         if (distance < shortestDistance)
         {
             closestParticle = i;
@@ -204,11 +203,12 @@ bool Particles::RemoveParticle(int x, int y)
     bool removed = false;
     if (PManager->PCount() > 0)
     {
+        Vector position (x,y);
         int closestParticle = GetClosestParticle(x,y);
-        double distance = sqrt( pow(x - PManager->Position(closestParticle, 0),2)+pow(y - PManager->Position(closestParticle, 1),2));
+        double distance = (position - PManager->P(closestParticle).Position).Abs();
         if (distance < ATOMIC_RADIUS)
         {
-            W.DrawParticle(closestParticle, White, PManager->Position(closestParticle, 0), PManager->Position(closestParticle, 1));
+            W.DrawParticle(closestParticle, White, PManager->P(closestParticle).Position.Get(0), PManager->P(closestParticle).Position.Get(1));
             PManager->RemoveParticle(closestParticle);
             W.ClearWindow();
             removed = true;
@@ -246,10 +246,10 @@ void Particles::UpdateParticlesPositionsAndDraw()
     int oldX;
     int oldY;
     for(int n1 = PManager->PCount() - 1; n1 >= 0; --n1){
-        oldX = PManager->Position(n1,0);
-        oldY = PManager->Position(n1,1);
+        oldX = PManager->P(n1).Position.Get(0);
+        oldY = PManager->P(n1).Position.Get(1);
         PManager->UpdatePosition(n1);
-        RedrawParticleAtNewPosition(n1, oldX, oldY, PManager->Position(n1,0), PManager->Position(n1,1), PManager->Charge(n1));
+        RedrawParticleAtNewPosition(n1, oldX, oldY, PManager->P(n1).Position.Get(0), PManager->P(n1).Position.Get(1), PManager->P(n1).Charge);
     }
 }
 
@@ -259,7 +259,7 @@ void Particles::AvoidCollisions()
     {
         for (int n2 = n1; n2 >= 0; --n2)
         {
-            double distance = PManager->Distance(n1,n2);;
+            double distance = PManager->Distance(n1,n2);
             PManager->ResolveOverlapIfNeeded(n1,n2, distance);
             if (PManager->CheckCollisionImminent(n1, n2))
             {
@@ -291,7 +291,7 @@ void Particles::HandleKeyPress()
         cout << check << endl;
     }
     if (check =='r') {Init();  cout << "Reset" << endl;}
-    if (check =='a') {RemoveParticle(PManager->Position(PManager->PCount() - 1, 0), PManager->Position(PManager->PCount() - 1, 1)); cout << "Remove particle" << endl;}
+    if (check =='a') {RemoveParticle(PManager->P(PManager->PCount() - 1).Position.Get(0), PManager->P(PManager->PCount() - 1).Position.Get(1)); cout << "Remove particle" << endl;}
     if (check =='-') {GravitationalConstant /= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.0;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='+') {GravitationalConstant *= 2; if (GravitationalConstant < 0.000000000001) GravitationalConstant = 0.00000000001;  cout << "G =" << GravitationalConstant << endl;}
     if (check =='1') {ElectrostaticConstant /= 2; if (ElectrostaticConstant < 0.000000000001) ElectrostaticConstant = 0.0;  cout << "E =" << ElectrostaticConstant << endl;}
@@ -303,12 +303,12 @@ void Particles::HandleKeyPress()
         for (int i = PManager->PCount() -  1; i >= 0; --i){
             PManager->ChangeRadius(i, -0.1);
         }
-        cout << "radius reduced by 0.1; it is now " << PManager->Radius(0) << endl;
+        cout << "radius reduced by 0.1; it is now " << PManager->P(0).Radius << endl;
     }
     if (check =='*') {
         for (int i = PManager->PCount() -  1; i >= 0; --i){
             PManager->ChangeRadius(i, 0.1);
         }
-        cout << "radius increased by 0.1; it is now " << PManager->Radius(0) << endl;
+        cout << "radius increased by 0.1; it is now " << PManager->P(0).Radius << endl;
     }
 }
