@@ -21,7 +21,10 @@ Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput):
     MolecularBondingEnergy(ATOMIC)
   , BorderDimensions()
   , DoInteraction(true)
-
+  , UnchargedParticleColor(0, 0, 0, 255)
+  , PositivelyChargedParticleColor(255, 0, 0, 255)
+  , NegativeChargedParticleColor(0, 0, 255, 255)
+  , BackgroundColor(255,255, 255, 255)
 {
     BorderDimensions.Set(window.GetSideX()*ZOOM, window.GetSideY()*ZOOM);
 }
@@ -134,16 +137,16 @@ void Particles::RedrawParticleAtNewPosition(int index, const Vector& oldPosition
     int oldX = oldPosition.v[0]/ZOOM;
     int oldY = oldPosition.v[1]/ZOOM;
 
-    EColor particleColor = Black;
+    RGBData particleColor = UnchargedParticleColor;
     if(q>0.0)
     {
-        particleColor = Red;
+        particleColor = PositivelyChargedParticleColor;
     }
     else if (q<0.0)
     {
-        particleColor = Blue;
+        particleColor = NegativeChargedParticleColor;
     }
-    W.DrawParticle(index, White, oldX, oldY);
+    W.DrawParticle(index, BackgroundColor, oldX, oldY);
     W.DrawParticle(index,particleColor, x,y);
 }
 
@@ -181,7 +184,7 @@ void Particles::ReInit(void)
 
 void Particles::Init(void){
     InitRandom();
-    W.ClearWindow();
+    W.ClearWindow(BackgroundColor);
     int MidX = BorderDimensions.Get(0)/2;
     int MidY = BorderDimensions.Get(1)/2;
     for (int n = 0; n < PARTICLE_COUNT; n++){
@@ -231,9 +234,9 @@ bool Particles::RemoveParticle(int x, int y)
         double distance = (position - PManager->P(closestParticle).Position).Abs();
         if (distance < ATOMIC_RADIUS)
         {
-            W.DrawParticle(closestParticle, White, PManager->P(closestParticle).Position.Get(0), PManager->P(closestParticle).Position.Get(1));
+            W.DrawParticle(closestParticle, BackgroundColor, PManager->P(closestParticle).Position.Get(0), PManager->P(closestParticle).Position.Get(1));
             PManager->RemoveParticle(closestParticle);
-            W.ClearWindow();
+            W.ClearWindow(BackgroundColor);
             removed = true;
 //            cout << "removed" << endl;
         }

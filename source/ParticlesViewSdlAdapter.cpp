@@ -21,43 +21,25 @@ ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side
     Presenter.Present();
 }
 
-void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, EColor color, int x, int y)
+void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, RGBData color, int x, int y)
 {
     DrawParticle(color, x, y);
 }
 
-void ParticlesViewSdlAdapter::ClearWindow()
+void ParticlesViewSdlAdapter::ClearWindow(RGBData color)
 {
-    RGBData white (255,255,255,0);
     for (int x = 0; x < SideX; x++)
     {
         for (int y = 0; y < SideY; y++)
         {
-            Presenter.StoreRGBData(x, y, white);
+            Presenter.StoreRGBData(x, y, color);
         }
     }
     Presenter.Present();
 }
 
-void ParticlesViewSdlAdapter::DrawParticle(EColor color, int x, int y)
+void ParticlesViewSdlAdapter::DrawParticle(RGBData colorData, int x, int y)
 {
-    RGBData colorData;
-    switch (color)
-    {
-    case EColor::Black:
-        colorData = RGBData(0,0,0,0);
-        break;
-    case EColor::White:
-        colorData = RGBData(255,255,255,255);
-        break;
-    case EColor::Red:
-        colorData = RGBData(255,0,0,255);
-        break;
-    case EColor::Blue:
-        colorData = RGBData(0,0,255,255);
-        break;
-
-    }
     Presenter.StoreRGBData(x-2, y-1, colorData);
     Presenter.StoreRGBData(x-2, y, colorData);
     Presenter.StoreRGBData(x-2, y+1, colorData);

@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include "Vector.h"
+#include "RGBData.h"
 
 
 class Particle;
@@ -39,6 +40,11 @@ private:
     double MolecularBondingEnergy;
     Vector BorderDimensions;
     bool DoInteraction;
+
+    RGBData UnchargedParticleColor;
+    RGBData PositivelyChargedParticleColor;
+    RGBData NegativeChargedParticleColor;
+    RGBData BackgroundColor;
 
     void HandleKeyPress();
     void AvoidCollisions();

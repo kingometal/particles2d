@@ -10,12 +10,12 @@ public:
     ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY);
 
     // ParticlesViewInterface interface
-    void DrawParticle(int index, EColor color, int x, int y);
-    void DrawParticle(EColor color, int x, int y);
+    void DrawParticle(int index, RGBData color, int x, int y);
+    void DrawParticle(RGBData color, int x, int y);
     void DrawScreen();
     int GetSideX();
     int GetSideY();
-    void ClearWindow();
+    void ClearWindow(RGBData color);
 private:
     IPresenter& Presenter;
     int SideX;
