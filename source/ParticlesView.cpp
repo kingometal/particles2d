@@ -15,31 +15,17 @@ ParticlesView::~ParticlesView()
 
 }
 
-void ParticlesView::SetColor(EColor color)
+void ParticlesView::SetColor(RGBData color)
 {
-   switch (color)
-   {
-   case EColor::Black:
-       this->Black();
-       break;
-   case EColor::White:
-       this->White();
-       break;
-   case EColor::Red:
-       this->Red();
-       break;
-   case EColor::Blue:
-       this->Blue();
-       break;
-   }
+   XWindow::SetColor((int) color.GetR(), (int) color.GetG(), (int) color.GetB());
 }
 
-void ParticlesView::DrawParticle(int /*index*/, EColor color, int x, int y)
+void ParticlesView::DrawParticle(int /*index*/, RGBData color, int x, int y)
 {
 	DrawParticle(color, x, y);
 }
 
-void ParticlesView::DrawParticle(EColor color, int x, int y)
+void ParticlesView::DrawParticle(RGBData color, int x, int y)
 {
     SetColor (color);
 
@@ -80,7 +66,12 @@ bool ParticlesView::IsQuitRequested()
     return ('q' == CheckKeyPress());
 }
 
-int ParticlesView::GetSide()
+int ParticlesView::GetSideX()
+{
+    return Side;
+}
+
+int ParticlesView::GetSideY()
 {
     return Side;
 }
@@ -97,7 +88,7 @@ MouseClick ParticlesView::CheckMouseClick()
     return result;
 }
 
-void ParticlesView::ClearWindow()
+void ParticlesView::ClearWindow(RGBData color)
 {
 
 }

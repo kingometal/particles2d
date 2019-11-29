@@ -12,17 +12,18 @@ public:
     virtual ~ParticlesView();
 
     // ParticlesViewInterface interface
-    void DrawParticle(int index, EColor color, int x, int y);
-    void DrawParticle(EColor color, int x, int y);
+    void DrawParticle(int index, RGBData color, int x, int y);
+    void DrawParticle(RGBData color, int x, int y);
     char CheckKeyPress();
     bool IsQuitRequested();
-    int GetSide();
+    int GetSideX();
+    int GetSideY();
     void DrawScreen();
     MouseClick CheckMouseClick();
-    void ClearWindow();
+    void ClearWindow(RGBData color);
 
 private:
-    void SetColor(EColor color);
+    void SetColor(RGBData color);
     int Side;
 };
 

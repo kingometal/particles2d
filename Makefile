@@ -44,6 +44,12 @@ $(OUTDIR)/particlesviewsdladapter.o: $(SOURCEDIR)/ParticlesViewSdlAdapter.h $(SO
 $(OUTDIR)/config.o: $(SOURCEDIR)/Config.h $(SOURCEDIR)/Config.cpp $(OUTDIR)/rgbdata.o
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Config.cpp -o $(OUTDIR)/config.o
 
+# $(OUTDIR)/particlesview.o: $(SOURCEDIR)/ParticlesView.h $(SOURCEDIR)/ParticlesView.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/rgbdata.o $(OUTDIR)/xwindows.o
+#	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticlesView.cpp -o $(OUTDIR)/particlesview.o
+#
+#$(OUTDIR)/xwindows.o: $(SOURCEDIR)/XWindows.h $(SOURCEDIR)/XWindows.cpp 
+#	$(GCC) $(FLAGS) -c $(SOURCEDIR)/XWindows.cpp -o $(OUTDIR)/xwindows.o
+
 
 #############################################
 ## SDL Framework
