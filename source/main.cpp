@@ -1,5 +1,5 @@
+#include "Config.h"
 #include "Particles.h"
-#include "Constants.h"
 #include "ParticlesViewSdlAdapter.h"
 #include "Presenter.h"
 #include "UserInput.h"
@@ -7,9 +7,11 @@
 int main(void)
 {
     Presenter* presenter = new Presenter();
-    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, WINDOW_SIDE, WINDOW_SIDE);
+    Config* parameters = new Config();
+    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, parameters->WindowSideSize, parameters->WindowSideSize, parameters->MaxFPS);
     UserInput* userInput = new UserInput();
-    Particles Ps(*view, *userInput);
+
+    Particles Ps(*view, *userInput, *parameters);
     Ps.Init();
     do
     {

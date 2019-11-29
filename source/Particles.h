@@ -2,18 +2,17 @@
 #define PARTICLES_H
 
 #include <ctime>
-#include "Vector.h"
-#include "RGBData.h"
-
 
 class Particle;
 class ParticlesViewInterface;
 class IUserInput;
 class ParticleManager;
+class Config;
+class Vector;
 
 class Particles{
 public:
-    Particles(ParticlesViewInterface& window, IUserInput& userInput);
+    Particles(ParticlesViewInterface& window, IUserInput& userInput, Config& parameters);
     ~Particles();
     void Update();
     void Init();
@@ -33,18 +32,7 @@ private:
     ParticlesViewInterface &W;
     IUserInput& UserInput;
     ParticleManager* PManager;
-
-    double GravitationalConstant;
-    double ElectrostaticConstant;
-    const double MagneticPermeability;
-    double MolecularBondingEnergy;
-    Vector BorderDimensions;
-    bool DoInteraction;
-
-    RGBData UnchargedParticleColor;
-    RGBData PositivelyChargedParticleColor;
-    RGBData NegativeChargedParticleColor;
-    RGBData BackgroundColor;
+    Config& Params;
 
     void HandleKeyPress();
     void AvoidCollisions();

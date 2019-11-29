@@ -1,5 +1,5 @@
 GCC = g++
-FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf -fPIC
+FLAGS = -std=c++11 -lSDL2 -lSDL2_ttf -lconfig -fPIC
 OUTDIR = build
 INDIR = .
 LIBDIR = libs
@@ -23,23 +23,26 @@ directories: $(OUTDIR)
 $(OUTDIR):
 	mkdir -p $(OUTDIR)
 
-${EXECUTABLE}: directories $(OUTDIR)/particles.o $(OUTDIR)/particle.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a
-	$(GCC) -Wall $(OUTDIR)/particle.o $(OUTDIR)/particles.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o -o $(EXECUTABLE) $$(pkg-config --libs x11) -l$(SDL_LIBRARY) -L$(OUTDIR)/$(LIBDIR) $(FLAGS)
+${EXECUTABLE}: directories $(OUTDIR)/particles.o $(OUTDIR)/particle.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a $(OUTDIR)/config.o
+	$(GCC) -Wall $(OUTDIR)/particle.o $(OUTDIR)/particles.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/config.o -o $(EXECUTABLE) $$(pkg-config --libs x11) -l$(SDL_LIBRARY) -L$(OUTDIR)/$(LIBDIR) $(FLAGS)
 
-$(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp $(SOURCEDIR)/Constants.h
+$(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/main.cpp -o $(OUTDIR)/main.o
 
-$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/Constants.h $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/particle.o
+$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/particle.o
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Particles.cpp -o $(OUTDIR)/particles.o
 
-$(OUTDIR)/particle.o: $(SOURCEDIR)/Particle.h $(SOURCEDIR)/Particle.cpp $(SOURCEDIR)/Constants.h
+$(OUTDIR)/particle.o: $(SOURCEDIR)/Particle.h $(SOURCEDIR)/Particle.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Particle.cpp -o $(OUTDIR)/particle.o
 
-$(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp $(SOURCEDIR)/Constants.h
+$(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticleManager.cpp -o $(OUTDIR)/particlemanager.o
 
 $(OUTDIR)/particlesviewsdladapter.o: $(SOURCEDIR)/ParticlesViewSdlAdapter.h $(SOURCEDIR)/ParticlesViewSdlAdapter.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/rgbdata.o
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticlesViewSdlAdapter.cpp -o $(OUTDIR)/particlesviewsdladapter.o
+
+$(OUTDIR)/config.o: $(SOURCEDIR)/Config.h $(SOURCEDIR)/Config.cpp $(OUTDIR)/rgbdata.o
+	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Config.cpp -o $(OUTDIR)/config.o
 
 
 #############################################

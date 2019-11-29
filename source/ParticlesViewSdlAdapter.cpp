@@ -1,13 +1,13 @@
 #include "ParticlesViewSdlAdapter.h"
 #include "interfaces/IPresenter.h"
-#include "Constants.h"
 #include "RGBData.h"
 #include <chrono>
 
-ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY)
+ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY, int maxFPS)
     : Presenter(presenter)
     , SideX(sideX)
     , SideY(sideY)
+    , MaxFPS(maxFPS)
 {
     Presenter.Init(sideY, sideX, false);
     RGBData colorData(255,255,255,0);
@@ -72,7 +72,7 @@ void ParticlesViewSdlAdapter::DrawScreen()
 //    if (currentTime - LastUpdate > 20)
 //    {
 //        LastUpdate=currentTime;
-        Presenter.Present(MAX_FPS);
+        Presenter.Present(MaxFPS);
 //    }
 }
 

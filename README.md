@@ -34,6 +34,8 @@ g++
 
 libx11-dev
 
+libconfig++-dev
+
 
 # Compiliing
 Simply run "make" in the project folder

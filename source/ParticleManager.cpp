@@ -110,7 +110,7 @@ public:
         Vector vRotated1 (p1.Velocity * cosr + Vector (sinr * p1.Velocity.Y(), - sinr * p1.Velocity.X()));
         Vector vRotated2 (p2.Velocity * cosr + Vector (sinr * p2.Velocity.Y(), - sinr * p2.Velocity.X()));
 
-        cout << "x, y " << (vRotated2 - vRotated1).X() << " : " << (vRotated2 - vRotated1).Y() << endl;
+//        cout << "x, y " << (vRotated2 - vRotated1).X() << " : " << (vRotated2 - vRotated1).Y() << endl;
         // perform collision along the X axis
         double vRotatedTempX = vRotated1.X();
         vRotated1.v[0] = OneDcollision (vRotated1.X(), vRotated2.X(), p1.Mass, p2.Mass);
