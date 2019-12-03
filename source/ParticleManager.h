@@ -17,6 +17,10 @@ public:
     void ResetForce(const int index);
     void ResetForces();
     void AddForce(int index, double dfx, double dfy);
+    void StoreForce(int index1, int index2, double df12x, double df12y);
+    void SkipForceCalculation(int index1, int index2);
+    int GetNumSkippedForceCalculations(int index1, int index2);
+    void ResetNumSkippedForceCalculations(int index1, int index2);
 
     void ChangeRadius(const int index, const double delta);
     void SetPosition(const int index, const Vector& newPosition);
@@ -25,6 +29,7 @@ public:
 
     double Distance(int index1, int index2) const;
     void PerformCollision(int index1, int index2);
+    void FuseParticles(int index1, int index2);
 
     const Particle& P(int index);
 private:

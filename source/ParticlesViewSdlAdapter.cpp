@@ -68,12 +68,7 @@ long long LastUpdate = 0;
 
 void ParticlesViewSdlAdapter::DrawScreen()
 {
-//    long long currentTime =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-//    if (currentTime - LastUpdate > 20)
-//    {
-//        LastUpdate=currentTime;
-        Presenter.Present(MaxFPS);
-//    }
+    Presenter.Present(MaxFPS);
 }
 
 int ParticlesViewSdlAdapter::GetSideX()

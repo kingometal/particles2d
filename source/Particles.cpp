@@ -26,11 +26,25 @@ Particles::~Particles()
     delete PManager;
 }
 
-Vector Particles::ApplyForce(int n1, int n2){
-    double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0, fTotX = 0.0, fTotY = 0.0;
+void Particles::ApplyForce(int n1, int n2){
+    if (n1 == n2)
+    {
+        std::cout << "!!!!!!!!!!!!  error n1:" << n1 << "; n2: " << n2 << " !!!!!!!!!!!!!!!!" << std::endl;
+        return;
+    }
+
     double dx = PManager->P(n1).Position.Get(0) - PManager->P(n2).Position.Get(0);
     double dy = PManager->P(n1).Position.Get(1) - PManager->P(n2).Position.Get(1);
     double distance = sqrt (dx * dx + dy * dy);
+
+    if ( ( distance > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 2) && PManager->P(n1).Forces.count(n2))
+    {
+        PManager->SkipForceCalculation(n1, n2);
+        return;
+    }
+
+
+    double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0, fTotX = 0.0, fTotY = 0.0;
     double reziR = 1.0 / distance;
     double reziR3 = reziR * reziR * reziR;
 
@@ -52,7 +66,7 @@ Vector Particles::ApplyForce(int n1, int n2){
     }
 
     // Lennard-Jones Potential Force
-    if (distance < Params.AtomicRadius * 20)
+    if (distance < Params.AtomicRadius * 10)
     {
         double arr = pow(Params.AtomicRadius*reziR , 6);
         double pot = Params.MolecularBondingEnergy * (pow(arr, 2) - arr) * reziR ;
@@ -63,8 +77,12 @@ Vector Particles::ApplyForce(int n1, int n2){
     fTotX = fgx+fcx+fmx;
     fTotY = fgy+fcy+fmy;
 
-    PManager->AddForce(n1, fTotX, fTotY);
-    PManager->AddForce(n2, -fTotX, -fTotY);
+    if (n2 == 1)
+    {
+//        cout << "calculating force with " << n1 << "; distance: "  << distance << endl;
+    }
+    PManager->StoreForce(n1, n2, fTotX, fTotY);
+    PManager->ResetNumSkippedForceCalculations(n1, n2);
 
     Vector resultingForce (fTotX, fTotY);
     if (resultingForce.Abs() > 10)
@@ -79,7 +97,7 @@ Vector Particles::ApplyForce(int n1, int n2){
         cout << "; molecular force is " << molecular.Abs() ;
         cout << endl;
     }
-    return resultingForce;
+    return;
 }
 
 //double Particles::eKin(){
@@ -264,22 +282,16 @@ void Particles::UpdateParticlesForcesAndVelocities()
                 ApplyForce(n1,n2);
             }
         }
-        if (PManager->P(n1).Force.Abs() > 100*Params.Scale)
+        if (PManager->P(n1).Force.Abs() > Params.MaxAllowedForce)
         {
             cout << "force of " << n1 << " is " << PManager->P(n1).Force.Abs() << endl;
-            cout << "its neghbours are: " << endl;
-            for (int i = 0; i < PManager->PCount(); i++)
-            {
-                Vector force = ApplyForce(n1, i);
-                double distance = PManager->Distance(n1, i);
-                if (distance < Params.AtomicRadius || force.Abs() > 0.1)
-                {
-                    cout << i << "; distance: " << distance << "; force: " << force.Abs() << endl;
-                }
-            }
             ReInit();
             return;
         }
+    }
+
+    for (int n1 = PManager->PCount() - 1; n1 >= 0; --n1)
+    {
         PManager->UpdateVelocity(n1, Params.BorderDimensions, Params.Dissipation);
     }
 }
@@ -320,7 +332,7 @@ void Particles::AvoidCollisions()
                     if (CheckCollisionImminent(n1, n2))
                     {
                         doCollisions = true;
-    //                        cout << "collision between " << n1 << " and " << n2 << endl;
+//                        cout << "collision between " << n1 << " and " << n2 << endl;
                         PManager->PerformCollision(n1, n2);
                         PManager->ResetForce(n1);
                         PManager->ResetForce(n2);

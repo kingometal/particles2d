@@ -34,6 +34,7 @@ public:
     RGBData NegativeChargedParticleColor;
     RGBData BackgroundColor;
     int MaxFPS;
+    double MaxAllowedForce;
 };
 
 #endif // PARTICLES_PARAMETERS_H

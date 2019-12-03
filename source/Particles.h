@@ -27,7 +27,7 @@ private:
     void RedrawV(int color);
     void RedrawV();
     void RedrawParticleAtNewPosition(int index, const Vector &oldPosition, const Vector &newPosition, double q);
-    Vector ApplyForce(int n1, int n2);
+    void ApplyForce(int n1, int n2);
 
     ParticlesViewInterface &W;
     IUserInput& UserInput;

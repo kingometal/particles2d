@@ -38,7 +38,8 @@ namespace
         }
         else
         {
-            std::cout << "loaded from config: " << key << " : " << temp  << std::endl;
+            target = temp;
+            std::cout << "loaded from config: " << key << " : " << target  << std::endl;
         }
     }
 }
@@ -65,6 +66,7 @@ Config::Config(void)
     , NegativeChargedParticleColor(0, 0, 255, 255)
     , BackgroundColor(255, 255, 255, 255)
     , MaxFPS(100)
+    , MaxAllowedForce(100.0)
 {
     config_t config;
     int tempColorR;
@@ -119,6 +121,8 @@ Config::Config(void)
     BackgroundColor = RGBData(tempColorR, tempColorG, tempColorB, 255);
 
     GetConfigInt(config, "MaxFPS", MaxFPS);
+
+    GetConfigDouble(config, "MaxAllowedForce", MaxAllowedForce);
 
     config_destroy(&config);
 }

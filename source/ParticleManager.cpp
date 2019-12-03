@@ -1,8 +1,12 @@
 #include "ParticleManager.h"
 #include "Particle.h"
 
+
 #include <cmath>
 #include <iostream>
+#include <map>
+#include <tuple>
+
 using namespace std;
 
 class ParticleManagerImpl
@@ -69,6 +73,7 @@ public:
         for (int i = 0; i < ParticleCount; i++)
         {
             ParticleN[i].Force.Reset();
+//            ParticleN[i].Forces.clear();
         }
     }
 
@@ -123,6 +128,8 @@ public:
 
     int ParticleCount;
     Particle* ParticleN;
+    std::map<std::pair<int, int>, int> SkippedForceCalculations;
+
 };
 
 
@@ -152,10 +159,11 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     double acceleration;
     double nextPossiblePosition;
     Particle & p = Impl->ParticleN[index];
-
+//    cout << "update velocity for " << index << endl;
+    Vector force = p.GetFullForce();
     for (int n = 0 ; n < 2 ;n++)
     {
-        acceleration = p.Force.Get(n) * p.ReciMass;
+        acceleration = force.Get(n) * p.ReciMass;
         nextPossiblePosition = p.Position.Get(n) + p.Velocity.Get(n) + acceleration;
         if (nextPossiblePosition >= maxCoord.Get(n) || nextPossiblePosition < 0)
         {
@@ -168,7 +176,7 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     }
 
     p.Velocity = p.Velocity * (1 - dissipation);
-
+//    cout << "updated velocity for " << index << endl;
 }
 
 void ParticleManager::UpdatePosition(const int index)
@@ -220,4 +228,30 @@ void ParticleManager::AddForce(int index, double dfx, double dfy)
 {
     Vector df (dfx, dfy);
     Impl->ParticleN[index].Force += df;
+}
+
+void ParticleManager::StoreForce(int index1, int index2, double df12x, double df12y)
+{
+    AddForce(index1, df12x, df12y);
+    AddForce(index2, -df12x, -df12y);
+    Impl->ParticleN[index1].Forces[index2].F = Vector(df12x, df12y);
+    Impl->ParticleN[index1].Forces[index2].Updated = true;\
+
+    Impl->ParticleN[index2].Forces[index1].F = Vector(-df12x, -df12y);
+    Impl->ParticleN[index2].Forces[index1].Updated = true;
+}
+
+void ParticleManager::SkipForceCalculation(int index1, int index2)
+{
+    Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)]++;
+}
+
+int ParticleManager::GetNumSkippedForceCalculations(int index1, int index2)
+{
+    return Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)];
+}
+
+void ParticleManager::ResetNumSkippedForceCalculations(int index1, int index2)
+{
+    Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)] = 0;
 }

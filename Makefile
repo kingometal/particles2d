@@ -35,7 +35,7 @@ $(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOU
 $(OUTDIR)/particle.o: $(SOURCEDIR)/Particle.h $(SOURCEDIR)/Particle.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Particle.cpp -o $(OUTDIR)/particle.o
 
-$(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp
+$(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp $(OUTDIR)/particle.o
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticleManager.cpp -o $(OUTDIR)/particlemanager.o
 
 $(OUTDIR)/particlesviewsdladapter.o: $(SOURCEDIR)/ParticlesViewSdlAdapter.h $(SOURCEDIR)/ParticlesViewSdlAdapter.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/rgbdata.o
