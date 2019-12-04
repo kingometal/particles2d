@@ -68,11 +68,25 @@ public:
         return temp;
     }
 
+    inline Vector operator-()
+    {
+        Vector temp (-v[0], -v[1]);
+        return temp;
+    }
+
     inline Vector operator*(const double f) const
     {
         Vector temp (*this);
         temp.v[0] *= f;
         temp.v[1] *= f;
+        return temp;
+    }
+
+    inline Vector operator/(const double f) const
+    {
+        Vector temp (*this);
+        temp.v[0] /= f;
+        temp.v[1] /= f;
         return temp;
     }
 
