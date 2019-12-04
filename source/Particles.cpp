@@ -226,9 +226,18 @@ void Particles::Init(void){
 
 void Particles::AddParticle(int x, int y, double dx, double dy)
 {
-    Vector position(x,y);
     Vector velocity(dx/500.0, dy/500.0);
-    PManager->AddParticle(position, velocity, Params.DefaultParticleMass, 0, Params.DefaultParticleRadius);
+    Vector position (x,y);
+    int closestParticle = GetClosestParticle(x,y);
+    double distance = (position - PManager->P(closestParticle).Position).Abs();
+    if (distance > Params.AtomicRadius)
+    {
+        PManager->AddParticle(position, velocity, Params.DefaultParticleMass, 0, Params.DefaultParticleRadius);
+    }
+    else
+    {
+        cout << "Can not add particle there are other particles too close to it" << endl;
+    }
 }
 
 int Particles::GetClosestParticle(int x, int y)
@@ -413,13 +422,15 @@ void Particles::HandleKeyPress()
 {
     char check = UserInput.CheckKeyPress();
     MouseClick click = UserInput.CheckMouseClick();
-    if (click.click)
+    if (click.rightclick)
     {
-        if (! RemoveParticle(click.x*Params.Scale, click.y*Params.Scale))
-        {
-            AddParticle(click.x*Params.Scale, click.y*Params.Scale, click.dx, click.dy);
-        }
+        RemoveParticle(click.x*Params.Scale, click.y*Params.Scale);
     }
+    else if (click.leftclick)
+    {
+        AddParticle(click.x*Params.Scale, click.y*Params.Scale, click.dx, click.dy);
+    }
+
     if (check != 0 && check != '0')
     {
         cout << check << endl;

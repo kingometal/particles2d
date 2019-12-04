@@ -76,15 +76,29 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
 
             }
         }
-        else if (SDL_MOUSEBUTTONDOWN== e.type)
+        else if (SDL_MOUSEBUTTONDOWN == e.type)
         {
-            lastMouseDown.click = true;
-            lastMouseDown.x = ((SDL_MouseButtonEvent&) e).x;
-            lastMouseDown.y = ((SDL_MouseButtonEvent&) e).y;
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+                lastMouseDown.leftclick = true;
+            }
+            else if (e.button.button == SDL_BUTTON_RIGHT)
+            {
+                lastMouseClick.rightclick = true;
+            }
+            lastMouseDown.x = e.button.x;
+            lastMouseDown.y = e.button.y;
         }
         else if (SDL_MOUSEBUTTONUP == e.type)
         {
-            lastMouseClick.click = true;
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+                lastMouseClick.leftclick = true;
+            }
+            else if (e.button.button == SDL_BUTTON_RIGHT)
+            {
+                lastMouseClick.rightclick = true;
+            }
             lastMouseClick.x = ((SDL_MouseButtonEvent&) e).x;
             lastMouseClick.y = ((SDL_MouseButtonEvent&) e).y;
             lastMouseClick.dx = lastMouseClick.x - lastMouseDown.x;
@@ -118,6 +132,7 @@ char UserInput::CheckKeyPress()
 MouseClick UserInput::CheckMouseClick()
 {
     MouseClick returnValue = LastMouseClick;
-    LastMouseClick.click = 0;
+    LastMouseClick.leftclick = false;
+    LastMouseClick.rightclick = false;
     return returnValue;
 }

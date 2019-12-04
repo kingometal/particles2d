@@ -7,7 +7,8 @@ struct MouseClick
     int y;
     int dx;
     int dy;
-    bool click = false;
+    bool leftclick = false;
+    bool rightclick = false;
 };
 
 class IUserInput

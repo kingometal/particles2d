@@ -29,7 +29,7 @@ ${EXECUTABLE}: directories $(OUTDIR)/particles.o $(OUTDIR)/particle.o $(OUTDIR)/
 $(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/main.cpp -o $(OUTDIR)/main.o
 
-$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/particle.o $(OUTDIR)/config.o $(OUTDIR)/particlemanager.o
+$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/particle.o $(OUTDIR)/config.o $(OUTDIR)/particlemanager.o $(SOURCEDIR)/$(INTERFACEFOLDER)/IUserInput.h
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Particles.cpp -o $(OUTDIR)/particles.o
 
 $(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp $(OUTDIR)/particle.o
@@ -54,7 +54,7 @@ $(OUTDIR)/config.o: $(SOURCEDIR)/Config.h $(SOURCEDIR)/Config.cpp $(OUTDIR)/rgbd
 #############################################
 ## SDL Framework
 #############################################
-$(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a: $(OUTDIR)/$(LIBDIR) $(OUTDIR)/rgbdata.o $(OUTDIR)/presenter.o $(OUTDIR)/userinput.o
+$(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a: $(OUTDIR)/$(LIBDIR) $(OUTDIR)/rgbdata.o $(OUTDIR)/presenter.o $(OUTDIR)/userinput.o $(SOURCEDIR)/$(INTERFACEFOLDER)/IUserInput.h
 	ar rcs $(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a $(OUTDIR)/rgbdata.o $(OUTDIR)/presenter.o $(OUTDIR)/userinput.o
 
 $(OUTDIR)/$(LIBDIR): directories
