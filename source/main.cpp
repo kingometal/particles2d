@@ -8,7 +8,7 @@ int main(void)
 {
     Presenter* presenter = new Presenter();
     Config* parameters = new Config();
-    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, parameters->WindowSideSize, parameters->WindowSideSize, parameters->MaxFPS);
+    ParticlesViewInterface* view = new ParticlesViewSdlAdapter(*presenter, parameters->WindowSideSizeX, parameters->WindowSideSizeY, parameters->MaxFPS);
     UserInput* userInput = new UserInput();
 
     Particles Ps(*view, *userInput, *parameters);

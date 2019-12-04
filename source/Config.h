@@ -9,7 +9,8 @@ class Config
 public:
     Config(void);
 
-    int WindowSideSize;
+    int WindowSideSizeX;
+    int WindowSideSizeY;
     double GravitationalConstant;
     double ElectrostaticConstant;
     double MagneticPermeability;

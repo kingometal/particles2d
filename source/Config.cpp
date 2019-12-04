@@ -45,7 +45,8 @@ namespace
 }
 
 Config::Config(void)
-    : WindowSideSize(1000)
+    : WindowSideSizeX(800)
+    , WindowSideSizeY(600)
     , GravitationalConstant (204.8)
     , ElectrostaticConstant (409.6)
     , MagneticPermeability (0.1)
@@ -86,7 +87,8 @@ Config::Config(void)
         return;
     }
 
-    GetConfigInt(config, "WindowSideSize", WindowSideSize);
+    GetConfigInt(config, "WindowSideSizeX", WindowSideSizeX);
+    GetConfigInt(config, "WindowSideSizeY", WindowSideSizeY);
     GetConfigDouble(config, "GravitationalConstant", GravitationalConstant);
     GetConfigDouble(config, "ElectrostaticConstant", ElectrostaticConstant);
     GetConfigDouble(config, "MagneticPermeability", MagneticPermeability);
