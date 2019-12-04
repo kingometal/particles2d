@@ -16,8 +16,8 @@ public:
     void UpdatePosition(const int index);
     void ResetForce(const int index);
     void ResetForces();
-    void AddForce(int index, double dfx, double dfy);
-    void StoreForce(int index1, int index2, double df12x, double df12y);
+    void AddForce(int index, Vector force);
+    void StoreForce(int index1, int index2, Vector force);
     void SkipForceCalculation(int index1, int index2);
     int GetNumSkippedForceCalculations(int index1, int index2);
     void ResetNumSkippedForceCalculations(int index1, int index2);

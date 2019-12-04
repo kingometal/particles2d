@@ -37,66 +37,74 @@ void Particles::ApplyForce(int n1, int n2){
     double dy = PManager->P(n1).Position.Get(1) - PManager->P(n2).Position.Get(1);
     double distance = sqrt (dx * dx + dy * dy);
 
-    if ( ( distance > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 2) && PManager->P(n1).Forces.count(n2))
+    if ( ( distance > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 1) && PManager->P(n1).Forces.count(n2))
     {
         PManager->SkipForceCalculation(n1, n2);
         return;
     }
 
 
-    double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0, fTotX = 0.0, fTotY = 0.0;
+    Vector gravity, electromagnetic, molecular;
     double reziR = 1.0 / distance;
     double reziR3 = reziR * reziR * reziR;
 
 
     // Gravity
+    if (Params.GravitationalConstant != 0.0)
     {
         double pot = - Params.GravitationalConstant * PManager->P(n1).Mass * PManager->P(n2).Mass * reziR3;
-        fgx = pot*dx;
-        fgy = pot*dy;
+        double fgx = pot * dx;
+        double fgy = pot * dy;
+        gravity = Vector (fgx, fgy);
     }
 
     // Coulomb and Lorentz
-    if (Params.ElectrostaticConstant > 0.0)
+    if (Params.ElectrostaticConstant != 0.0 || Params.MagneticPermeability != 0.0)
     {
         double pot = PManager->P(n1).Charge * PManager->P(n2).Charge * reziR3;
         double lorentz = PManager->P(n2).Velocity.Get(0) * dy - PManager->P(n2).Velocity.Get(1) * dx;
-        fcx = pot * (Params.ElectrostaticConstant * dx + Params.MagneticPermeability * PManager->P(n1).Velocity.Get(1) * lorentz );
-        fcy = pot * (Params.ElectrostaticConstant  *dy - Params.MagneticPermeability * PManager->P(n1).Velocity.Get(0) * lorentz );
+        double fcx = pot * (Params.ElectrostaticConstant * dx + Params.MagneticPermeability * PManager->P(n1).Velocity.Get(1) * lorentz );
+        double fcy = pot * (Params.ElectrostaticConstant  *dy - Params.MagneticPermeability * PManager->P(n1).Velocity.Get(0) * lorentz );
+        electromagnetic = Vector (fcx, fcy);
     }
 
     // Lennard-Jones Potential Force
-    if (distance < Params.AtomicRadius * 10)
+    if (Params.MolecularBondingEnergy != 0 && distance < Params.AtomicRadius * 10)
     {
         double arr = pow(Params.AtomicRadius*reziR , 6);
         double pot = Params.MolecularBondingEnergy * (pow(arr, 2) - arr) * reziR ;
-        fmx = pot * dx;
-        fmy = pot * dy;
+        double fmx = pot * dx;
+        double fmy = pot * dy;
+        molecular = Vector (fmx, fmy);
     }
 
-    fTotX = fgx+fcx+fmx;
-    fTotY = fgy+fcy+fmy;
+    Vector resultingForce = gravity + electromagnetic + molecular;
 
-    if (n2 == 1)
+    if ((Params.RestrictInterParticleForce || Params.WriteInterParticleForceWarning) && resultingForce.Abs() > Params.MaxInterParticleForce)
     {
-//        cout << "calculating force with " << n1 << "; distance: "  << distance << endl;
+        if (Params.WriteInterParticleForceWarning)
+        {
+            cout << "force between " << n1 << " and " << n2 << " is " << resultingForce.Abs() ;
+            cout << "; distance is " << distance ;
+            cout << "; gravity is " << gravity.Abs() ;
+            cout << "; electromagnetic force is " << electromagnetic.Abs() ;
+            cout << "; molecular force is " << molecular.Abs() ;
+            cout << endl;
+        }
+
+        if (Params.RestrictInterParticleForce)
+        {
+            resultingForce = resultingForce / resultingForce.Abs() * Params.MaxInterParticleForce;
+            if (Params.WriteInterParticleForceWarning)
+            {
+                cout << "new force is: " << resultingForce.Abs() << endl ;
+            }
+        }
     }
-    PManager->StoreForce(n1, n2, fTotX, fTotY);
+
+    PManager->StoreForce(n1, n2, resultingForce);
     PManager->ResetNumSkippedForceCalculations(n1, n2);
 
-    Vector resultingForce (fTotX, fTotY);
-    if (resultingForce.Abs() > 10)
-    {
-        cout << "force between " << n1 << " and " << n2 << " is " << resultingForce.Abs() ;
-        cout << "; distance between " << n1 << " and " << n2 << " is " << distance ;
-        Vector gravity (fgx, fgy);
-        Vector electromagnetic (fcx, fcy);
-        Vector molecular (fmx, fmy);
-        cout << "; gravity is " << gravity.Abs() ;
-        cout << "; electromagnetic force is " << electromagnetic.Abs() ;
-        cout << "; molecular force is " << molecular.Abs() ;
-        cout << endl;
-    }
     return;
 }
 
@@ -282,9 +290,9 @@ void Particles::UpdateParticlesForcesAndVelocities()
                 ApplyForce(n1,n2);
             }
         }
-        if (PManager->P(n1).Force.Abs() > Params.MaxAllowedForce)
+        if (Params.ResetOnMaxAllowedForce && PManager->P(n1).Force.Abs() > Params.MaxAllowedForce)
         {
-            cout << "force of " << n1 << " is " << PManager->P(n1).Force.Abs() << endl;
+            cout << "Force on particle " << n1 << " is " << PManager->P(n1).Force.Abs() << "; resetting..." << endl;
             ReInit();
             return;
         }

@@ -224,20 +224,19 @@ void ParticleManager::PerformCollision (int index1, int index2){
     Impl->PerformCollision (index1, index2);
 }
 
-void ParticleManager::AddForce(int index, double dfx, double dfy)
+void ParticleManager::AddForce(int index, Vector force)
 {
-    Vector df (dfx, dfy);
-    Impl->ParticleN[index].Force += df;
+    Impl->ParticleN[index].Force += force;
 }
 
-void ParticleManager::StoreForce(int index1, int index2, double df12x, double df12y)
+void ParticleManager::StoreForce(int index1, int index2, Vector force)
 {
-    AddForce(index1, df12x, df12y);
-    AddForce(index2, -df12x, -df12y);
-    Impl->ParticleN[index1].Forces[index2].F = Vector(df12x, df12y);
-    Impl->ParticleN[index1].Forces[index2].Updated = true;\
+    AddForce(index1, force);
+    AddForce(index2, -force);
+    Impl->ParticleN[index1].Forces[index2].F = force;
+    Impl->ParticleN[index1].Forces[index2].Updated = true;
 
-    Impl->ParticleN[index2].Forces[index1].F = Vector(-df12x, -df12y);
+    Impl->ParticleN[index2].Forces[index1].F = -force;
     Impl->ParticleN[index2].Forces[index1].Updated = true;
 }
 
