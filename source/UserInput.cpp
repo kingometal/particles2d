@@ -73,7 +73,9 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
             case SDLK_i:
                 LastKeyPressed = 'i';
                 break;
-
+            case SDLK_v:
+                LastKeyPressed = 'v';
+                break;
             }
         }
         else if (SDL_MOUSEBUTTONDOWN == e.type)

@@ -273,7 +273,7 @@ bool Particles::RemoveParticle(int x, int y)
 
 void Particles::VelocityDrawRemoveOld()
 {
-    if (Params.DrawVelocities && !Params.DrawVelocitiesDoNotRedrawPrevious)
+    if (Params.DrawVelocities)
     {
         DrawVelocities(&Params.BackgroundColor);
     }
@@ -290,7 +290,10 @@ void Particles::VelocityDrawNew()
 void Particles::Update(){
     HandleKeyPress();
 
-    VelocityDrawRemoveOld();
+    if ( !Params.DrawVelocitiesDoNotRedrawPrevious)
+    {
+        VelocityDrawRemoveOld();
+    }
 
     if (Params.CheckCollisions && Params.DoInteraction)
     {
@@ -461,7 +464,7 @@ void Particles::HandleKeyPress()
     if (check =='4') {Params.MolecularBondingEnergy /= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
     if (check =='5') {Params.MolecularBondingEnergy *= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
     if (check =='i') {Params.DoInteraction = !Params.DoInteraction;  cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
-
+    if (check =='v') {VelocityDrawRemoveOld(); Params.DrawVelocities = !Params.DrawVelocities; VelocityDrawRemoveOld(); cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
     if (check =='/') {
         for (int i = PManager->PCount() -  1; i >= 0; --i){
             PManager->ChangeRadius(i, -0.1);
