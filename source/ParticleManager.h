@@ -30,6 +30,7 @@ public:
     double Distance(int index1, int index2) const;
     void PerformCollision(int index1, int index2);
     void FuseParticles(int index1, int index2);
+    Vector GetFullForce(int index) const;
 
     const Particle& P(int index);
 private:

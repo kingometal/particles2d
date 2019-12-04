@@ -1,12 +1,6 @@
 #include "ParticleManager.h"
 #include "Particle.h"
 
-
-#include <cmath>
-#include <iostream>
-#include <map>
-#include <tuple>
-
 using namespace std;
 
 class ParticleManagerImpl
@@ -15,7 +9,9 @@ public:
     ParticleManagerImpl(int particleCount)
         : ParticleCount(particleCount)
     {
-        ParticleN = new Particle[particleCount];
+        ParticleN = new Particle[ParticleCount];
+        Forces = new Vector[ParticleCount*ParticleCount]();
+        SkippedForceCalculations = new int[ParticleCount*ParticleCount]();
     }
 
     ~ParticleManagerImpl()
@@ -30,6 +26,7 @@ public:
         {
             tempParticlesN[i] = ParticleN[i];
         }
+
         delete [] ParticleN;
         ParticleN = tempParticlesN;
 
@@ -37,16 +34,28 @@ public:
         ParticleN[ParticleCount].Mass = mass;
         ParticleN[ParticleCount].Charge = charge;
         ParticleN[ParticleCount].Velocity = velocity;
-        ParticleN[ParticleCount].Force.Set(0.0, 0.0);
         ParticleN[ParticleCount].Radius = radius;
 
+        delete (Forces);
+        delete (SkippedForceCalculations);
+
         ParticleCount++;
+
+        Forces = new Vector[ParticleCount*ParticleCount]();
+        SkippedForceCalculations = new int[ParticleCount*ParticleCount]();
+        for (int i = 0; i < ParticleCount*ParticleCount; ++i)
+        {
+            Forces[i].Reset();
+            SkippedForceCalculations[i] = 0;
+        }
+
         return ParticleCount;
     }
 
     void RemoveParticle(const int index)
     {
         Particle* tempParticlesN = new Particle[ParticleCount - 1];
+
         int j = 0;
         for (int i = 0; i < ParticleCount - 1; i++)
         {
@@ -60,21 +69,25 @@ public:
         }
         delete [] ParticleN;
         ParticleN = tempParticlesN;
+
+        delete (Forces);
+        delete (SkippedForceCalculations);
+
         ParticleCount--;
+
+        Forces = new Vector[ParticleCount*ParticleCount]();
+        SkippedForceCalculations = new int[ParticleCount*ParticleCount]();
+
+        for (int i = 0; i < ParticleCount*ParticleCount; ++i)
+        {
+            Forces[i].Reset();
+            SkippedForceCalculations[i] = 0;
+        }
     }
 
     void UpdatePosition(int index)
     {
         ParticleN[index].Position += ParticleN[index].Velocity;
-    }
-
-    void ResetForces()
-    {
-        for (int i = 0; i < ParticleCount; i++)
-        {
-            ParticleN[i].Force.Reset();
-//            ParticleN[i].Forces.clear();
-        }
     }
 
     void ChangeRadius(int index, double delta)
@@ -115,7 +128,6 @@ public:
         Vector vRotated1 (p1.Velocity * cosr + Vector (sinr * p1.Velocity.Y(), - sinr * p1.Velocity.X()));
         Vector vRotated2 (p2.Velocity * cosr + Vector (sinr * p2.Velocity.Y(), - sinr * p2.Velocity.X()));
 
-//        cout << "x, y " << (vRotated2 - vRotated1).X() << " : " << (vRotated2 - vRotated1).Y() << endl;
         // perform collision along the X axis
         double vRotatedTempX = vRotated1.X();
         vRotated1.v[0] = OneDcollision (vRotated1.X(), vRotated2.X(), p1.Mass, p2.Mass);
@@ -126,10 +138,33 @@ public:
         p2.Velocity = vRotated2 * cosr + Vector (- sinr * vRotated2.Y(), sinr * vRotated2.X());
     }
 
-    int ParticleCount;
-    Particle* ParticleN;
-    std::map<std::pair<int, int>, int> SkippedForceCalculations;
+    Vector GetForce(int index1, int index2)
+    {
+        return Forces[index1*ParticleCount + index2];
+    }
 
+    void SetForce(int index1, int index2, Vector v)
+    {
+        Forces[index1*ParticleCount + index2] = v;
+    }
+
+    Vector GetFullForce(int index)
+    {
+        Vector sum;
+        int startposition = index * ParticleCount;
+        Vector* currentForce = &Forces[startposition];
+        for (int i = 0; i < ParticleCount; ++i)
+        {
+            sum += *currentForce;
+            currentForce++;
+        }
+        return sum;
+    }
+
+    int ParticleCount;
+    Vector *Forces;
+    Particle* ParticleN;
+    int* SkippedForceCalculations;
 };
 
 
@@ -159,8 +194,7 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     double acceleration;
     double nextPossiblePosition;
     Particle & p = Impl->ParticleN[index];
-//    cout << "update velocity for " << index << endl;
-    Vector force = p.GetFullForce();
+    Vector force = Impl->GetFullForce(index);
     for (int n = 0 ; n < 2 ;n++)
     {
         acceleration = force.Get(n) * p.ReciMass;
@@ -176,22 +210,11 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     }
 
     p.Velocity = p.Velocity * (1 - dissipation);
-//    cout << "updated velocity for " << index << endl;
 }
 
 void ParticleManager::UpdatePosition(const int index)
 {
     Impl->UpdatePosition(index);
-}
-
-void ParticleManager::ResetForce(const int index)
-{
-    Impl->ParticleN[index].Force.Reset();
-}
-
-void ParticleManager::ResetForces()
-{
-    Impl->ResetForces();
 }
 
 void ParticleManager::ChangeRadius(const int index, const double delta)
@@ -224,33 +247,28 @@ void ParticleManager::PerformCollision (int index1, int index2){
     Impl->PerformCollision (index1, index2);
 }
 
-void ParticleManager::AddForce(int index, Vector force)
+Vector ParticleManager::GetFullForce(int index) const
 {
-    Impl->ParticleN[index].Force += force;
+    return Impl->GetFullForce(index);
 }
 
 void ParticleManager::StoreForce(int index1, int index2, Vector force)
 {
-    AddForce(index1, force);
-    AddForce(index2, -force);
-    Impl->ParticleN[index1].Forces[index2].F = force;
-    Impl->ParticleN[index1].Forces[index2].Updated = true;
-
-    Impl->ParticleN[index2].Forces[index1].F = -force;
-    Impl->ParticleN[index2].Forces[index1].Updated = true;
+    Impl->SetForce(index1, index2, force);
+    Impl->SetForce(index2, index1, -force);
 }
 
 void ParticleManager::SkipForceCalculation(int index1, int index2)
 {
-    Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)]++;
+    Impl->SkippedForceCalculations[index1 * Impl->ParticleCount + index2]++;
 }
 
 int ParticleManager::GetNumSkippedForceCalculations(int index1, int index2)
 {
-    return Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)];
+    return Impl->SkippedForceCalculations[index1 * Impl->ParticleCount + index2];
 }
 
 void ParticleManager::ResetNumSkippedForceCalculations(int index1, int index2)
 {
-    Impl->SkippedForceCalculations[std::pair<int,int>(index1, index2)] = 0;
+    Impl->SkippedForceCalculations[index1 * Impl->ParticleCount + index2] = 0;
 }

@@ -4,19 +4,6 @@
 #include "Vector.h"
 #include <map>
 
-class ForceStruct
-{
-public:
-    ForceStruct()
-        : F(0.0, 0.0)
-        , Updated(false)
-    {
-    }
-
-    Vector F;
-    bool Updated;
-};
-
 class Particle
 {
 public:
@@ -24,10 +11,6 @@ public:
 
     Vector Position;
     Vector Velocity;
-    Vector Force;
-    std::map<int, ForceStruct> Forces;
-
-    Vector GetFullForce();
 
     double Mass;
     double ReciMass;

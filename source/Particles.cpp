@@ -1,16 +1,16 @@
 #include "Particles.h"
 #include "ParticleManager.h"
-#include "interfaces/Rnd.h"
-#include <iostream>
 #include "interfaces/IUserInput.h"
-#include <cmath>
 #include "interfaces/ParticlesViewInterface.h"
 #include "Vector.h"
 #include "Particle.h"
 #include "Config.h"
+#include "interfaces/Rnd.h"
 #include <iostream>
 
 #define MAX_FLOAT 3.40282347e+38F
+
+using namespace std;
 
 Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput, Config &parameters):
     W(window),
@@ -26,7 +26,8 @@ Particles::~Particles()
     delete PManager;
 }
 
-void Particles::ApplyForce(int n1, int n2){
+void Particles::ApplyForce(int n1, int n2)
+{
     if (n1 == n2)
     {
         std::cout << "!!!!!!!!!!!!  error n1:" << n1 << "; n2: " << n2 << " !!!!!!!!!!!!!!!!" << std::endl;
@@ -36,20 +37,12 @@ void Particles::ApplyForce(int n1, int n2){
     double dx = PManager->P(n1).Position.Get(0) - PManager->P(n2).Position.Get(0);
     double dy = PManager->P(n1).Position.Get(1) - PManager->P(n2).Position.Get(1);
     double distance = sqrt (dx * dx + dy * dy);
-
-    if ( ( distance > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 1) && PManager->P(n1).Forces.count(n2))
-    {
-        PManager->SkipForceCalculation(n1, n2);
-        return;
-    }
-
-
-    Vector gravity, electromagnetic, molecular;
     double reziR = 1.0 / distance;
     double reziR3 = reziR * reziR * reziR;
 
 
     // Gravity
+    Vector gravity;
     if (Params.GravitationalConstant != 0.0)
     {
         double pot = - Params.GravitationalConstant * PManager->P(n1).Mass * PManager->P(n2).Mass * reziR3;
@@ -59,6 +52,7 @@ void Particles::ApplyForce(int n1, int n2){
     }
 
     // Coulomb and Lorentz
+     Vector electromagnetic;
     if (Params.ElectrostaticConstant != 0.0 || Params.MagneticPermeability != 0.0)
     {
         double pot = PManager->P(n1).Charge * PManager->P(n2).Charge * reziR3;
@@ -69,6 +63,7 @@ void Particles::ApplyForce(int n1, int n2){
     }
 
     // Lennard-Jones Potential Force
+    Vector molecular;
     if (Params.MolecularBondingEnergy != 0 && distance < Params.AtomicRadius * 10)
     {
         double arr = pow(Params.AtomicRadius*reziR , 6);
@@ -215,6 +210,17 @@ void Particles::Init(void){
         const Particle& p = PManager->P(newParticleCount - 1);
         RedrawParticleAtNewPosition(n, p.Position, p.Position, p.Charge);
     }
+
+    if (Params.DoInteraction)
+    {
+        for (int n = 0; n < Params.ParticleCount; n++){
+            for (int n2 = 0; n2 < n; ++n2)
+            {
+                ApplyForce(n,n2);
+            }
+        }
+    }
+
     W.DrawScreen();
 }
 
@@ -263,7 +269,6 @@ bool Particles::RemoveParticle(int x, int y)
 }
 
 void Particles::Update(){
-    PManager->ResetForces();
     HandleKeyPress();
     if (Params.CheckCollisions && Params.DoInteraction)
     {
@@ -271,6 +276,7 @@ void Particles::Update(){
     }
 
     UpdateParticlesForcesAndVelocities();
+
     if (Params.CheckCollisions && Params.DoInteraction)
     {
         AvoidCollisions();
@@ -281,20 +287,27 @@ void Particles::Update(){
 
 void Particles::UpdateParticlesForcesAndVelocities()
 {
-    for (int n1 = PManager->PCount() - 1; n1 >= 0; --n1)
+    if (Params.DoInteraction)
     {
-        if (Params.DoInteraction)
+        for (int n1 = PManager->PCount() - 1; n1 >= 0; --n1)
         {
             for (int n2 = n1-1; n2 >= 0; --n2) // this has to be done in this order, not "n2 = 0; n2 < n1;" because otherwise you cannot update speed in the same loop
             {
-                ApplyForce(n1,n2);
+                if (PManager->Distance(n1, n2) > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 2)
+                {
+                    PManager->SkipForceCalculation(n1, n2);
+                }
+                else
+                {
+                    ApplyForce(n1,n2);
+                }
             }
-        }
-        if (Params.ResetOnMaxAllowedForce && PManager->P(n1).Force.Abs() > Params.MaxAllowedForce)
-        {
-            cout << "Force on particle " << n1 << " is " << PManager->P(n1).Force.Abs() << "; resetting..." << endl;
-            ReInit();
-            return;
+            if (Params.ResetOnMaxAllowedForce && PManager->GetFullForce(n1).Abs() > Params.MaxAllowedForce)
+            {
+                cout << "Force on particle " << n1 << " is " << PManager->GetFullForce(n1).Abs() << "; resetting..." << endl;
+                ReInit();
+                return;
+            }
         }
     }
 
@@ -340,10 +353,7 @@ void Particles::AvoidCollisions()
                     if (CheckCollisionImminent(n1, n2))
                     {
                         doCollisions = true;
-//                        cout << "collision between " << n1 << " and " << n2 << endl;
                         PManager->PerformCollision(n1, n2);
-                        PManager->ResetForce(n1);
-                        PManager->ResetForce(n2);
                         ApplyForce(n1, n2);
                         PManager->UpdateVelocity(n1, Params.BorderDimensions, Params.Dissipation);
                         PManager->UpdateVelocity(n2, Params.BorderDimensions, Params.Dissipation);
@@ -354,11 +364,6 @@ void Particles::AvoidCollisions()
         if (success) break;
     }
     while (outerRetries++ < 1);
-
-    if (outerRetries >= Params.ResolveCollisionsRetries)
-    {
-//        cout << "timeout calculating overall collisions" << endl;
-    }
 }
 
 bool Particles::CheckOverlap(const int index1, const int index2, const double distance) const
