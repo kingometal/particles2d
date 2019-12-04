@@ -33,6 +33,7 @@ public:
     Vector GetFullForce(int index) const;
 
     const Particle& P(int index);
+    int GetClosestParticle(int x, int y);
 private:
     ParticleManagerImpl* Impl;
 };

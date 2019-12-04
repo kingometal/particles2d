@@ -8,8 +8,6 @@
 #include "interfaces/Rnd.h"
 #include <iostream>
 
-#define MAX_FLOAT 3.40282347e+38F
-
 using namespace std;
 
 Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput, Config &parameters):
@@ -222,7 +220,7 @@ void Particles::AddParticle(int x, int y, double dx, double dy)
 {
     Vector velocity(dx/500.0, dy/500.0);
     Vector position (x,y);
-    int closestParticle = GetClosestParticle(x,y);
+    int closestParticle = PManager->GetClosestParticle(x,y);
     double distance = (position - PManager->P(closestParticle).Position).Abs();
     if (distance > Params.AtomicRadius)
     {
@@ -234,22 +232,6 @@ void Particles::AddParticle(int x, int y, double dx, double dy)
     }
 }
 
-int Particles::GetClosestParticle(int x, int y)
-{
-    int closestParticle = -1;
-    double shortestDistance = MAX_FLOAT;
-    Vector position(x,y);
-    for (int i = PManager->PCount() -  1; i >= 0; --i)
-    {
-        double distance = (position - PManager->P(i).Position).Abs();
-        if (distance < shortestDistance)
-        {
-            closestParticle = i;
-            shortestDistance = distance;
-        }
-    }
-    return closestParticle;
-}
 
 bool Particles::RemoveParticle(int x, int y)
 {
@@ -257,7 +239,7 @@ bool Particles::RemoveParticle(int x, int y)
     if (PManager->PCount() > 0)
     {
         Vector position (x,y);
-        int closestParticle = GetClosestParticle(x,y);
+        int closestParticle = PManager->GetClosestParticle(x,y);
         double distance = (position - PManager->P(closestParticle).Position).Abs();
         if (distance < Params.AtomicRadius)
         {
@@ -265,7 +247,6 @@ bool Particles::RemoveParticle(int x, int y)
             PManager->RemoveParticle(closestParticle);
             W.ClearWindow(Params.BackgroundColor);
             removed = true;
-//            cout << "removed" << endl;
         }
     }
     return removed;
@@ -320,7 +301,7 @@ void Particles::UpdateParticlesForcesAndVelocities()
     {
         for (int n1 = PManager->PCount() - 1; n1 >= 0; --n1)
         {
-            for (int n2 = n1-1; n2 >= 0; --n2) // this has to be done in this order, not "n2 = 0; n2 < n1;" because otherwise you cannot update speed in the same loop
+            for (int n2 = n1-1; n2 >= 0; --n2)
             {
                 if (PManager->Distance(n1, n2) > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 2)
                 {

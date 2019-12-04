@@ -3,6 +3,8 @@
 
 using namespace std;
 
+#define MAX_FLOAT 3.40282347e+38F
+
 class ParticleManagerImpl
 {
 public:
@@ -166,6 +168,23 @@ public:
     Particle* ParticleN;
     int* SkippedForceCalculations;
 };
+
+int ParticleManager::GetClosestParticle(int x, int y)
+{
+    int closestParticle = -1;
+    double shortestDistance = MAX_FLOAT;
+    Vector position(x,y);
+    for (int i = Impl->ParticleCount -  1; i >= 0; --i)
+    {
+        double distance = (position - Impl->ParticleN[i].Position).Abs();
+        if (distance < shortestDistance)
+        {
+            closestParticle = i;
+            shortestDistance = distance;
+        }
+    }
+    return closestParticle;
+}
 
 
 

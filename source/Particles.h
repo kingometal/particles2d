@@ -40,7 +40,6 @@ private:
     void UpdateParticlesForcesAndVelocities();
     void AddParticle(int x, int y, double dx, double dy);
     bool RemoveParticle(int x, int y);
-    int GetClosestParticle(int x, int y);
     void UpdateParticleSpeed(int n);
     bool CheckCollisionImminent(const int index1, const int index2) const;
     void ReInit();
