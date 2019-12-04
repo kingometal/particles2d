@@ -12,6 +12,7 @@ public:
     // ParticlesViewInterface interface
     void DrawParticle(int index, RGBData color, int x, int y);
     void DrawParticle(RGBData color, int x, int y);
+    void DrawLine(RGBData color, int x, int y, int dx, int dy);
     void DrawScreen();
     int GetSideX();
     int GetSideY();

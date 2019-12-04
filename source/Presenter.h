@@ -9,7 +9,8 @@ public:
     ~Presenter();
 
     // IPresenter interface
-    void StoreRGBData(int x, int y, const RGBData &data);
+    void StorePoint(int x, int y, const RGBData &data);
+    void StoreLine(int x, int y, int dx, int dy, const RGBData &data);
     void Present(int maxFps);
     void Init(int height, int width, bool resizable);
     void ClearWindow(RGBData& color);

@@ -163,21 +163,15 @@ void Particles::RedrawParticleAtNewPosition(int index, const Vector& oldPosition
     W.DrawParticle(index,particleColor, x,y);
 }
 
-//void Particles::RedrawParticleAtNewPosition(int index)
-//{
-//    RedrawParticleAtNewPosition(index, ParticleN[index].GetSavedXPosition(), ParticleN[index].GetSavedYPosition(), ParticleN[index].GetXPosition(), ParticleN[index].GetYPosition(), Charge(index));
-//}
-
-void Particles::RedrawV(){
-    //    W.Black();
-    //    W.DrawLine (x, y, x+vx*100, y+vy*100);
-}
-
-void Particles::RedrawV(int color){
-    //    W.Black();
-    //    if (color ==0) W.White();
-    //    W.DrawLine (x, y, x+vx*100, y+vy*100);
-    //    W.Black();
+void Particles::DrawVelocities(RGBData *color) const
+{
+    double factor = Params.VelocityLengthFactor;
+    double rezScale = 1.0 / (double) Params.Scale;
+    for (int i = 0; i < PManager->PCount(); i++)
+    {
+        const Particle & p = PManager->P(i);
+        W.DrawLine(*color, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+    }
 }
 
 void Particles::Sleep( clock_t wait ){
@@ -277,8 +271,27 @@ bool Particles::RemoveParticle(int x, int y)
     return removed;
 }
 
+void Particles::VelocityDrawRemoveOld()
+{
+    if (Params.DrawVelocities && !Params.DrawVelocitiesDoNotRedrawPrevious)
+    {
+        DrawVelocities(&Params.BackgroundColor);
+    }
+}
+
+void Particles::VelocityDrawNew()
+{
+    if (Params.DrawVelocities)
+    {
+        DrawVelocities(&Params.VelocityColor);
+    }
+}
+
 void Particles::Update(){
     HandleKeyPress();
+
+    VelocityDrawRemoveOld();
+
     if (Params.CheckCollisions && Params.DoInteraction)
     {
         AvoidCollisions();
@@ -290,7 +303,11 @@ void Particles::Update(){
     {
         AvoidCollisions();
     }
+
     UpdateParticlesPositionsAndDraw();
+
+    VelocityDrawNew();
+
     W.DrawScreen();
 }
 

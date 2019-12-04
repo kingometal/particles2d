@@ -72,11 +72,17 @@ Config::Config(void)
     , MaxInterParticleForce(1.0)
     , WriteInterParticleForceWarning(true)
     , ResetOnMaxAllowedForce(true)
+    , DrawVelocities(false)
+    , VelocityLengthFactor(100.0)
+    , VelocityColor (0, 0, 0, 255)
+    , DrawVelocitiesDoNotRedrawPrevious(false)
+
 {
     config_t config;
     int tempColorR;
     int tempColorG;
     int tempColorB;
+    int tempColorGamma;
 
     config_init(&config);
 
@@ -125,6 +131,15 @@ Config::Config(void)
     GetConfigInt(config, "BackgroundColorG", tempColorG);
     GetConfigInt(config, "BackgroundColorB", tempColorB);
     BackgroundColor = RGBData(tempColorR, tempColorG, tempColorB, 255);
+
+    GetConfigBool(config, "DrawVelocities", DrawVelocities);
+    GetConfigBool(config, "DrawVelocitiesDoNotRedrawPrevious", DrawVelocitiesDoNotRedrawPrevious);
+    GetConfigDouble(config, "VelocityLengthFactor", VelocityLengthFactor);
+    GetConfigInt(config, "VelocityColorR", tempColorR);
+    GetConfigInt(config, "VelocityColorG", tempColorG);
+    GetConfigInt(config, "VelocityColorB", tempColorB);
+    GetConfigInt(config, "VelocityColorGamma", tempColorGamma);
+    VelocityColor = RGBData(tempColorR, tempColorG, tempColorB, tempColorGamma);
 
     GetConfigInt(config, "MaxFPS", MaxFPS);
 

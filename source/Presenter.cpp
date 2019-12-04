@@ -25,6 +25,12 @@ public:
         SDL_RenderDrawPoint(renderer, x, y);
     }
 
+    void DrawLine(int x, int y, int dx, int dy, const RGBData& rgbData)
+    {
+        SDL_SetRenderDrawColor(renderer, rgbData.GetR(), rgbData.GetG(), rgbData.GetB(), rgbData.GetA());
+        SDL_RenderDrawLine(renderer, x, y, x+dx, y+dy);
+    }
+
     void Present(int maxFps)
     {
         SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
@@ -157,9 +163,14 @@ Presenter::~Presenter()
     delete Pimpl;
 }
 
-void Presenter::StoreRGBData(int x, int y, const RGBData &data)
+void Presenter::StorePoint(int x, int y, const RGBData &data)
 {
     Pimpl->Draw(x, y, data);
+}
+
+void Presenter::StoreLine(int x, int y, int dx, int dy, const RGBData &data)
+{
+    Pimpl->DrawLine(x, y, dx, dy, data);
 }
 
 void Presenter::Present(int maxFps)

@@ -9,6 +9,7 @@ class IUserInput;
 class ParticleManager;
 class Config;
 class Vector;
+class RGBData;
 
 class Particles{
 public:
@@ -24,11 +25,9 @@ public:
     void Sleep(clock_t wait);
 
 private:
-    void RedrawV(int color);
-    void RedrawV();
+    void DrawVelocities(RGBData* color) const;
     void RedrawParticleAtNewPosition(int index, const Vector &oldPosition, const Vector &newPosition, double q);
     void ApplyForce(int n1, int n2);
-    void ApplyForce(int n1, int n2, double dx, double dy, double distance);
 
     ParticlesViewInterface &W;
     IUserInput& UserInput;
@@ -47,6 +46,8 @@ private:
     void ReInit();
     void ResolveOverlapIfNeeded(int index1, int index2, double distance);
     bool CheckOverlap(const int index1, const int index2, const double distance) const;
+    void VelocityDrawRemoveOld();
+    void VelocityDrawNew();
 };
 
 #endif

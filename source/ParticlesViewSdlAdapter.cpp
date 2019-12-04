@@ -15,7 +15,7 @@ ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side
     {
         for (int y = 0; y < sideY; y++)
         {
-            Presenter.StoreRGBData(x, y, colorData);
+            Presenter.StorePoint(x, y, colorData);
         }
     }
     Presenter.Present();
@@ -32,7 +32,7 @@ void ParticlesViewSdlAdapter::ClearWindow(RGBData color)
     {
         for (int y = 0; y < SideY; y++)
         {
-            Presenter.StoreRGBData(x, y, color);
+            Presenter.StorePoint(x, y, color);
         }
     }
     Presenter.Present();
@@ -40,27 +40,32 @@ void ParticlesViewSdlAdapter::ClearWindow(RGBData color)
 
 void ParticlesViewSdlAdapter::DrawParticle(RGBData colorData, int x, int y)
 {
-    Presenter.StoreRGBData(x-2, y-1, colorData);
-    Presenter.StoreRGBData(x-2, y, colorData);
-    Presenter.StoreRGBData(x-2, y+1, colorData);
-    Presenter.StoreRGBData(x-1, y-2, colorData);
-    Presenter.StoreRGBData(x-1, y-1, colorData);
-    Presenter.StoreRGBData(x-1, y, colorData);
-    Presenter.StoreRGBData(x-1, y+1, colorData);
-    Presenter.StoreRGBData(x-1, y+2, colorData);
-    Presenter.StoreRGBData(x, y-2, colorData);
-    Presenter.StoreRGBData(x, y-1, colorData);
-    Presenter.StoreRGBData(x, y, colorData);
-    Presenter.StoreRGBData(x, y+1, colorData);
-    Presenter.StoreRGBData(x, y+2, colorData);
-    Presenter.StoreRGBData(x+1, y-2, colorData);
-    Presenter.StoreRGBData(x+1, y-1, colorData);
-    Presenter.StoreRGBData(x+1, y, colorData);
-    Presenter.StoreRGBData(x+1, y+1, colorData);
-    Presenter.StoreRGBData(x+1, y+2, colorData);
-    Presenter.StoreRGBData(x+2, y-1, colorData);
-    Presenter.StoreRGBData(x+2, y, colorData);
-    Presenter.StoreRGBData(x+2, y+1, colorData);
+    Presenter.StorePoint(x-2, y-1, colorData);
+    Presenter.StorePoint(x-2, y, colorData);
+    Presenter.StorePoint(x-2, y+1, colorData);
+    Presenter.StorePoint(x-1, y-2, colorData);
+    Presenter.StorePoint(x-1, y-1, colorData);
+    Presenter.StorePoint(x-1, y, colorData);
+    Presenter.StorePoint(x-1, y+1, colorData);
+    Presenter.StorePoint(x-1, y+2, colorData);
+    Presenter.StorePoint(x, y-2, colorData);
+    Presenter.StorePoint(x, y-1, colorData);
+    Presenter.StorePoint(x, y, colorData);
+    Presenter.StorePoint(x, y+1, colorData);
+    Presenter.StorePoint(x, y+2, colorData);
+    Presenter.StorePoint(x+1, y-2, colorData);
+    Presenter.StorePoint(x+1, y-1, colorData);
+    Presenter.StorePoint(x+1, y, colorData);
+    Presenter.StorePoint(x+1, y+1, colorData);
+    Presenter.StorePoint(x+1, y+2, colorData);
+    Presenter.StorePoint(x+2, y-1, colorData);
+    Presenter.StorePoint(x+2, y, colorData);
+    Presenter.StorePoint(x+2, y+1, colorData);
+}
+
+void ParticlesViewSdlAdapter::DrawLine(RGBData color, int x, int y, int dx, int dy)
+{
+    Presenter.StoreLine(x, y, dx, dy, color);
 }
 
 int count = 0;

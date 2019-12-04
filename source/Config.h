@@ -34,6 +34,12 @@ public:
     RGBData PositivelyChargedParticleColor;
     RGBData NegativeChargedParticleColor;
     RGBData BackgroundColor;
+
+    bool DrawVelocities;
+    bool DrawVelocitiesDoNotRedrawPrevious;
+    double VelocityLengthFactor;
+    RGBData VelocityColor;
+
     int MaxFPS;
     double MaxAllowedForce;
     bool RestrictInterParticleForce;
