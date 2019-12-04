@@ -67,6 +67,10 @@ Config::Config(void)
     , BackgroundColor(255, 255, 255, 255)
     , MaxFPS(100)
     , MaxAllowedForce(100.0)
+    , RestrictInterParticleForce(false)
+    , MaxInterParticleForce(1.0)
+    , WriteInterParticleForceWarning(true)
+    , ResetOnMaxAllowedForce(true)
 {
     config_t config;
     int tempColorR;
@@ -122,7 +126,12 @@ Config::Config(void)
 
     GetConfigInt(config, "MaxFPS", MaxFPS);
 
+    GetConfigBool(config, "ResetOnMaxAllowedForce", ResetOnMaxAllowedForce);
     GetConfigDouble(config, "MaxAllowedForce", MaxAllowedForce);
+
+    GetConfigBool(config, "RestrictInterParticleForce", RestrictInterParticleForce);
+    GetConfigDouble(config, "MaxInterParticleForce", MaxInterParticleForce);
+    GetConfigBool(config, "WriteInterParticleForceWarning", WriteInterParticleForceWarning);
 
     config_destroy(&config);
 }

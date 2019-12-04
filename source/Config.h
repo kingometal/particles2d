@@ -35,6 +35,10 @@ public:
     RGBData BackgroundColor;
     int MaxFPS;
     double MaxAllowedForce;
+    bool RestrictInterParticleForce;
+    double MaxInterParticleForce;
+    bool WriteInterParticleForceWarning;
+    bool ResetOnMaxAllowedForce;
 };
 
 #endif // PARTICLES_PARAMETERS_H
