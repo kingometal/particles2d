@@ -234,7 +234,7 @@ void Particles::Init(void){
     for (int n = 0; n < Params.ParticleCount; n++){
         int positiveOrNegative = n%2 == 0 ? -1 : 1;
         double distance = 30.0;
-        Vector position(MidX + pow(n, 1.0/3.0)*distance*Params.Scale*sin(n), MidY + pow(n, 1.0/3.0)*distance*Params.Scale*cos(n));
+        Vector position(MidX + pow(n, 1.0/3.0)*distance*sin(n), MidY + pow(n, 1.0/3.0)*distance*cos(n));
         double speedRange =  0.01;
         Vector velocity (-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));
         PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
