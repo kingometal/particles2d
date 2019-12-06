@@ -47,11 +47,7 @@ namespace
 Config::Config(void)
     : WindowSideSizeX(800)
     , WindowSideSizeY(600)
-    , GravitationalConstant (204.8)
-    , ElectrostaticConstant (409.6)
-    , MagneticPermeability (0.1)
-    , MolecularBondingEnergy(0.001)
-    , AtomicRadius(20.0)
+    , PhysConstants()
     , Dissipation(0.000001)
     , ParticleCount(200)
     , DefaultParticleRadius(10)
@@ -75,9 +71,7 @@ Config::Config(void)
     , DrawVelocities(false)
     , VelocityLengthFactor(100.0)
     , VelocityColor (0, 0, 0, 255)
-    , DrawVelocitiesDoNotRedrawPrevious(false)
-
-{
+{            
     config_t config;
     int tempColorR;
     int tempColorG;
@@ -95,11 +89,11 @@ Config::Config(void)
 
     GetConfigInt(config, "WindowSideSizeX", WindowSideSizeX);
     GetConfigInt(config, "WindowSideSizeY", WindowSideSizeY);
-    GetConfigDouble(config, "GravitationalConstant", GravitationalConstant);
-    GetConfigDouble(config, "ElectrostaticConstant", ElectrostaticConstant);
-    GetConfigDouble(config, "MagneticPermeability", MagneticPermeability);
-    GetConfigDouble(config, "MolecularBondingEnergy", MolecularBondingEnergy);
-    GetConfigDouble(config, "AtomicRadius", AtomicRadius);
+    GetConfigDouble(config, "GravitationalConstant", PhysConstants.GravitationalConstant);
+    GetConfigDouble(config, "ElectrostaticConstant", PhysConstants.ElectrostaticConstant);
+    GetConfigDouble(config, "MagneticPermeability", PhysConstants.MagneticPermeability);
+    GetConfigDouble(config, "MolecularBondingEnergy", PhysConstants.MolecularBondingEnergy);
+    GetConfigDouble(config, "AtomicRadius", PhysConstants.AtomicRadius);
     GetConfigDouble(config, "Dissipation", Dissipation);
     GetConfigInt(config, "ParticleCount", ParticleCount);
     GetConfigDouble(config, "DefaultParticleRadius", DefaultParticleRadius);
@@ -133,7 +127,6 @@ Config::Config(void)
     BackgroundColor = RGBData(tempColorR, tempColorG, tempColorB, 255);
 
     GetConfigBool(config, "DrawVelocities", DrawVelocities);
-    GetConfigBool(config, "DrawVelocitiesDoNotRedrawPrevious", DrawVelocitiesDoNotRedrawPrevious);
     GetConfigDouble(config, "VelocityLengthFactor", VelocityLengthFactor);
     GetConfigInt(config, "VelocityColorR", tempColorR);
     GetConfigInt(config, "VelocityColorG", tempColorG);

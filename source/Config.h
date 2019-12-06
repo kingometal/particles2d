@@ -4,6 +4,26 @@
 #include "RGBData.h"
 #include "Vector.h"
 
+struct PhysicalConstants
+{
+    PhysicalConstants()
+        : GravitationalConstant (204.8)
+        , ElectrostaticConstant (409.6)
+        , MagneticPermeability (0.1)
+        , MolecularBondingEnergy(0.001)
+        , AtomicRadius(20.0)
+    {
+
+    }
+
+    double GravitationalConstant;
+    double ElectrostaticConstant;
+    double MagneticPermeability;
+    double MolecularBondingEnergy;
+    double AtomicForceConstant;
+    double AtomicRadius;
+};
+
 class Config
 {
 public:
@@ -11,12 +31,7 @@ public:
 
     int WindowSideSizeX;
     int WindowSideSizeY;
-    double GravitationalConstant;
-    double ElectrostaticConstant;
-    double MagneticPermeability;
-    double MolecularBondingEnergy;
-    double AtomicForceConstant;
-    double AtomicRadius;
+    PhysicalConstants PhysConstants;
     double Dissipation;
     int ParticleCount;
     double DefaultParticleRadius;
@@ -36,7 +51,6 @@ public:
     RGBData BackgroundColor;
 
     bool DrawVelocities;
-    bool DrawVelocitiesDoNotRedrawPrevious;
     double VelocityLengthFactor;
     RGBData VelocityColor;
 

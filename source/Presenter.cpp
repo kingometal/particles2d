@@ -10,46 +10,13 @@ class Presenter::PresenterImpl
 public:
     PresenterImpl(int height, int width, bool resizable)
     {
-        Init(&gWindow, &renderer, &font, width, height, resizable);
-        PrintRendererInfo(renderer);
+        Init(&gWindow, &Renderer, &font, width, height, resizable);
+        PrintRendererInfo(Renderer);
     }
 
     ~PresenterImpl()
     {
-        DeInit(&gWindow, &renderer, &font);
-    }
-
-    void Draw(int x, int y, const RGBData& rgbData)
-    {
-        SDL_SetRenderDrawColor(renderer, rgbData.GetR(), rgbData.GetG(), rgbData.GetB(), rgbData.GetA());
-        SDL_RenderDrawPoint(renderer, x, y);
-    }
-
-    void DrawLine(int x, int y, int dx, int dy, const RGBData& rgbData)
-    {
-        SDL_SetRenderDrawColor(renderer, rgbData.GetR(), rgbData.GetG(), rgbData.GetB(), rgbData.GetA());
-        SDL_RenderDrawLine(renderer, x, y, x+dx, y+dy);
-    }
-
-    void DrawRectangle(int x, int y, int dx, int dy, const RGBData& rgbData)
-    {
-        SDL_SetRenderDrawColor(renderer, rgbData.GetR(), rgbData.GetG(), rgbData.GetB(), rgbData.GetA());
-        SDL_Rect rect = {x, y, dx, dy};
-        SDL_RenderFillRect(renderer, &rect);
-    }
-
-    void Present(int maxFps)
-    {
-        SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
-        double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-        double fps = 1.0/(secondsCounter - lastFPSOutputTime);
-
-        if (0 == maxFps || fps < maxFps)
-        {
-            PrintText(renderer, std::to_string(fps).c_str(), fontColor, font, 0,0 );
-            SDL_RenderPresent(renderer);
-            lastFPSOutputTime = secondsCounter;
-        }
+        DeInit(&gWindow, &Renderer, &font);
     }
 
     void PrintRendererInfo(SDL_Renderer *renderer)
@@ -153,9 +120,8 @@ public:
         }
     }
 
-private:
     SDL_Window* gWindow = NULL;
-    SDL_Renderer* renderer = NULL;
+    SDL_Renderer* Renderer = NULL;
     TTF_Font* font = NULL;
     double lastFPSOutputTime;
 };
@@ -172,22 +138,37 @@ Presenter::~Presenter()
 
 void Presenter::StorePoint(int x, int y, const RGBData &data)
 {
-    Pimpl->Draw(x, y, data);
+    SDL_SetRenderDrawColor(Pimpl->Renderer, data.GetR(), data.GetG(), data.GetB(), data.GetA());
+    SDL_RenderDrawPoint(Pimpl->Renderer, x, y);
 }
 
 void Presenter::StoreLine(int x, int y, int dx, int dy, const RGBData &data)
 {
-    Pimpl->DrawLine(x, y, dx, dy, data);
+    SDL_SetRenderDrawColor(Pimpl->Renderer, data.GetR(), data.GetG(), data.GetB(), data.GetA());
+    SDL_RenderDrawLine(Pimpl->Renderer, x, y, x+dx, y+dy);
 }
 
 void Presenter::StoreRectangle(int x, int y, int dx, int dy, const RGBData &data)
 {
-    Pimpl->DrawRectangle(x, y, dx, dy, data);
+    SDL_SetRenderDrawColor(Pimpl->Renderer, data.GetR(), data.GetG(), data.GetB(), data.GetA());
+    SDL_Rect rect = {x, y, dx, dy};
+    SDL_RenderFillRect(Pimpl->Renderer, &rect);
 }
 
 void Presenter::Present(int maxFps)
 {
-    Pimpl->Present(maxFps);
+    SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+    double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
+    double fps = 1.0/(secondsCounter - Pimpl->lastFPSOutputTime);
+
+    if (0 == maxFps || fps < maxFps)
+    {
+        Pimpl->PrintText(Pimpl->Renderer, std::to_string(fps).c_str(), fontColor, Pimpl->font, 0,0 );
+
+        SDL_RenderPresent(Pimpl->Renderer);
+        
+        Pimpl->lastFPSOutputTime = secondsCounter;
+    }
 }
 
 void Presenter::Init(int height, int width, bool resizable)
@@ -197,4 +178,11 @@ void Presenter::Init(int height, int width, bool resizable)
 
 void Presenter::ClearWindow(RGBData &color)
 {
+    int w;
+    int h;
+
+    SDL_GL_GetDrawableSize(Pimpl->gWindow, &w, &h);
+    SDL_SetRenderDrawColor(Pimpl->Renderer, color.GetR(), color.GetG(), color.GetB(), color.GetA());
+    SDL_Rect rect = {0, 0, w, h};
+    SDL_RenderFillRect(Pimpl->Renderer, &rect);
 }

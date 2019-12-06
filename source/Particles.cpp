@@ -10,7 +10,63 @@
 
 using namespace std;
 
+Vector GetGravity(const Particle& p1 , const Particle& p2, double reziprocalDistance, double G)
+{
+    double dx = p1.Position.Get(0) - p2.Position.Get(0);
+    double dy = p1.Position.Get(1) - p2.Position.Get(1);
+    double pot = - G * p1.Mass * p2.Mass * reziprocalDistance * reziprocalDistance * reziprocalDistance;
+    double fgx = pot * dx;
+    double fgy = pot * dy;
+    return Vector (fgx, fgy);
+}
 
+Vector GetElectromagneticForce(const Particle& p1 , const Particle& p2, double reziprocalDistance, double E, double M)
+{
+    double dx = p1.Position.Get(0) - p2.Position.Get(0);
+    double dy = p1.Position.Get(1) - p2.Position.Get(1);
+    double pot = p1.Charge * p2.Charge * reziprocalDistance * reziprocalDistance * reziprocalDistance;
+    double lorentz = p2.Velocity.Get(0) * dy - p2.Velocity.Get(1) * dx;
+    double fcx = pot * (E * dx + M * p1.Velocity.Get(1) * lorentz );
+    double fcy = pot * (E * dy - M * p1.Velocity.Get(0) * lorentz );
+    return Vector (fcx, fcy);
+}
+
+Vector GetLennardJonesForce(const Particle& p1 , const Particle& p2, double distance, double reziprocalDistance, double atomicRadius, double bondingEnergy)
+{
+    double fmx = 0.0;
+    double fmy = 0.0;
+    if (bondingEnergy != 0 && distance < atomicRadius * 10)
+    {
+        double dx = p1.Position.Get(0) - p2.Position.Get(0);
+        double dy = p1.Position.Get(1) - p2.Position.Get(1);
+        double arr = pow(atomicRadius * reziprocalDistance , 6);
+        double pot = bondingEnergy * (pow(arr, 2) - arr) * reziprocalDistance ;
+        fmx = pot * dx;
+        fmy = pot * dy;
+    }
+    return Vector (fmx, fmy);
+}
+
+Vector GetInterParticleForce(const Particle& p1 , const Particle& p2, const PhysicalConstants& Params)
+{
+    double dx = p1.Position.Get(0) - p2.Position.Get(0);
+    double dy = p1.Position.Get(1) - p2.Position.Get(1);
+    double distance = sqrt (dx * dx + dy * dy);
+    double reziR = 1.0 / distance;
+
+    // Gravity
+    Vector gravity = GetGravity(p1, p2, reziR, Params.GravitationalConstant);
+
+    // Coulomb and Lorentz
+    Vector electromagnetic = GetElectromagneticForce(p1, p2, reziR, Params.ElectrostaticConstant, Params.MagneticPermeability);
+
+    // Lennard-Jones Potential Force
+    Vector molecular = GetLennardJonesForce(p1, p2, distance, reziR, Params.AtomicRadius, Params.MolecularBondingEnergy);
+
+    Vector resultingForce = gravity + electromagnetic + molecular;
+
+    return resultingForce;
+}
 
 class ParticleDrawer
     {
@@ -82,79 +138,32 @@ Particles::~Particles()
 
 void Particles::ApplyForce(int n1, int n2)
 {
-    if (n1 == n2)
-    {
-        std::cout << "!!!!!!!!!!!!  error n1:" << n1 << "; n2: " << n2 << " !!!!!!!!!!!!!!!!" << std::endl;
-        return;
-    }
+    Vector force = GetInterParticleForce(PManager->P(n1), PManager->P(n2), Params.PhysConstants);
 
-    double dx = PManager->P(n1).Position.Get(0) - PManager->P(n2).Position.Get(0);
-    double dy = PManager->P(n1).Position.Get(1) - PManager->P(n2).Position.Get(1);
-    double distance = sqrt (dx * dx + dy * dy);
-    double reziR = 1.0 / distance;
-    double reziR3 = reziR * reziR * reziR;
-
-
-    // Gravity
-    Vector gravity;
-    if (Params.GravitationalConstant != 0.0)
-    {
-        double pot = - Params.GravitationalConstant * PManager->P(n1).Mass * PManager->P(n2).Mass * reziR3;
-        double fgx = pot * dx;
-        double fgy = pot * dy;
-        gravity = Vector (fgx, fgy);
-    }
-
-    // Coulomb and Lorentz
-     Vector electromagnetic;
-    if (Params.ElectrostaticConstant != 0.0 || Params.MagneticPermeability != 0.0)
-    {
-        double pot = PManager->P(n1).Charge * PManager->P(n2).Charge * reziR3;
-        double lorentz = PManager->P(n2).Velocity.Get(0) * dy - PManager->P(n2).Velocity.Get(1) * dx;
-        double fcx = pot * (Params.ElectrostaticConstant * dx + Params.MagneticPermeability * PManager->P(n1).Velocity.Get(1) * lorentz );
-        double fcy = pot * (Params.ElectrostaticConstant  *dy - Params.MagneticPermeability * PManager->P(n1).Velocity.Get(0) * lorentz );
-        electromagnetic = Vector (fcx, fcy);
-    }
-
-    // Lennard-Jones Potential Force
-    Vector molecular;
-    if (Params.MolecularBondingEnergy != 0 && distance < Params.AtomicRadius * 10)
-    {
-        double arr = pow(Params.AtomicRadius*reziR , 6);
-        double pot = Params.MolecularBondingEnergy * (pow(arr, 2) - arr) * reziR ;
-        double fmx = pot * dx;
-        double fmy = pot * dy;
-        molecular = Vector (fmx, fmy);
-    }
-
-    Vector resultingForce = gravity + electromagnetic + molecular;
-
-    if ((Params.RestrictInterParticleForce || Params.WriteInterParticleForceWarning) && resultingForce.Abs() > Params.MaxInterParticleForce)
+    if ((Params.RestrictInterParticleForce || Params.WriteInterParticleForceWarning) && force.Abs() > Params.MaxInterParticleForce)
     {
         if (Params.WriteInterParticleForceWarning)
         {
-            cout << "force between " << n1 << " and " << n2 << " is " << resultingForce.Abs() ;
-            cout << "; distance is " << distance ;
-            cout << "; gravity is " << gravity.Abs() ;
-            cout << "; electromagnetic force is " << electromagnetic.Abs() ;
-            cout << "; molecular force is " << molecular.Abs() ;
+            cout << "force between particle " << n1 << " and " << n2 << " is " << force.Abs() ;
+//            cout << "; distance is " << distance ;
+//            cout << "; gravity is " << gravity.Abs() ;
+//            cout << "; electromagnetic force is " << electromagnetic.Abs() ;
+//            cout << "; molecular force is " << molecular.Abs() ;
             cout << endl;
         }
 
         if (Params.RestrictInterParticleForce)
         {
-            resultingForce = resultingForce / resultingForce.Abs() * Params.MaxInterParticleForce;
+            force = force / force.Abs() * Params.MaxInterParticleForce;
             if (Params.WriteInterParticleForceWarning)
             {
-                cout << "new force is: " << resultingForce.Abs() << endl ;
+                cout << "new force is: " << force.Abs() << endl ;
             }
         }
     }
 
-    PManager->StoreForce(n1, n2, resultingForce);
+    PManager->StoreForce(n1, n2, force);
     PManager->ResetNumSkippedForceCalculations(n1, n2);
-
-    return;
 }
 
 //double Particles::eKin(){
@@ -199,17 +208,6 @@ void Particles::ApplyForce(int n1, int n2)
 void Particles::Draw() const
 {
     Drawer->Draw(W, *PManager, Params);
-//    W.ClearWindow(Params.BackgroundColor);
-//    for (int i = 0; i < PManager->PCount(); i++)
-//    {
-//        const Particle & p = PManager->P(i);
-//        DrawParticle(i);
-//        if (Params.DrawVelocities)
-//        {
-//            DrawVelocity(i);
-//        }
-//    }
-//    W.DrawScreen();
 }
 
 void Particles::Sleep( clock_t wait ){
@@ -259,7 +257,7 @@ void Particles::AddParticle(int x, int y, double dx, double dy)
     Vector position (x,y);
     int closestParticle = PManager->GetClosestParticle(x,y);
     double distance = (position - PManager->P(closestParticle).Position).Abs();
-    if (distance > Params.AtomicRadius)
+    if (distance > Params.PhysConstants.AtomicRadius)
     {
         PManager->AddParticle(position, velocity, Params.DefaultParticleMass, 0, Params.DefaultParticleRadius);
     }
@@ -278,7 +276,7 @@ bool Particles::RemoveParticle(int x, int y)
         Vector position (x,y);
         int closestParticle = PManager->GetClosestParticle(x,y);
         double distance = (position - PManager->P(closestParticle).Position).Abs();
-        if (distance < Params.AtomicRadius)
+        if (distance < Params.PhysConstants.AtomicRadius)
         {
             PManager->RemoveParticle(closestParticle);
             removed = true;
@@ -321,7 +319,7 @@ void Particles::UpdateParticlesForcesAndVelocities()
         {
             for (int n2 = n1-1; n2 >= 0; --n2)
             {
-                if (PManager->Distance(n1, n2) > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.AtomicRadius * 2)
+                if (PManager->Distance(n1, n2) > (PManager->GetNumSkippedForceCalculations(n1, n2) + 1) * Params.PhysConstants.AtomicRadius * 2)
                 {
                     PManager->SkipForceCalculation(n1, n2);
                 }
@@ -450,12 +448,12 @@ void Particles::HandleKeyPress()
     }
     if (check =='r') {ReInit();  cout << "Reset" << endl;}
     if (check =='a') {RemoveParticle(PManager->P(PManager->PCount() - 1).Position.Get(0), PManager->P(PManager->PCount() - 1).Position.Get(1)); cout << "Remove particle" << endl;}
-    if (check =='-') {Params.GravitationalConstant /= 2; if (Params.GravitationalConstant < 0.000000000001) Params.GravitationalConstant = 0.0;  cout << "G =" << Params.GravitationalConstant << endl;}
-    if (check =='+') {Params.GravitationalConstant *= 2; if (Params.GravitationalConstant < 0.000000000001) Params.GravitationalConstant = 0.00000000001;  cout << "G =" << Params.GravitationalConstant << endl;}
-    if (check =='1') {Params.ElectrostaticConstant /= 2; if (Params.ElectrostaticConstant < 0.000000000001) Params.ElectrostaticConstant = 0.0;  cout << "E =" << Params.ElectrostaticConstant << endl;}
-    if (check =='2') {Params.ElectrostaticConstant *= 2; if (Params.ElectrostaticConstant < 0.000000000001) Params.ElectrostaticConstant = 0.00000000001;  cout << "E =" << Params.ElectrostaticConstant << endl;}
-    if (check =='4') {Params.MolecularBondingEnergy /= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
-    if (check =='5') {Params.MolecularBondingEnergy *= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
+    if (check =='-') {Params.PhysConstants.GravitationalConstant /= 2; if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.0;  cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;}
+    if (check =='+') {Params.PhysConstants.GravitationalConstant *= 2; if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.00000000001;  cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;}
+    if (check =='1') {Params.PhysConstants.ElectrostaticConstant /= 2; if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.0;  cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;}
+    if (check =='2') {Params.PhysConstants.ElectrostaticConstant *= 2; if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.00000000001;  cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;}
+    if (check =='4') {Params.PhysConstants.MolecularBondingEnergy /= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
+    if (check =='5') {Params.PhysConstants.MolecularBondingEnergy *= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
     if (check =='i') {Params.DoInteraction = !Params.DoInteraction;  cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
     if (check =='v') {Params.DrawVelocities = !Params.DrawVelocities; cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
     if (check =='/') {
