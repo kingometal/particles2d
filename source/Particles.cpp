@@ -141,35 +141,46 @@ void Particles::ApplyForce(int n1, int n2)
 //}
 
 
-void Particles::RedrawParticleAtNewPosition(int index, const Vector& oldPosition, const Vector& newPosition, double q)
+void Particles::DrawParticle(int index) const
 {
-    int x = newPosition.v[0]/Params.Scale;
-    int y = newPosition.v[1]/Params.Scale;
-    int oldX = oldPosition.v[0]/Params.Scale;
-    int oldY = oldPosition.v[1]/Params.Scale;
+    const Particle& p = PManager->P(index);
 
+    int x = p.Position.X()/Params.Scale;
+    int y = p.Position.Y()/Params.Scale;
     RGBData particleColor = Params.UnchargedParticleColor;
-    if(q>0.0)
+
+    if(p.Charge>0.0)
     {
         particleColor = Params.PositivelyChargedParticleColor;
     }
-    else if (q<0.0)
+    else if (p.Charge<0.0)
     {
         particleColor = Params.NegativeChargedParticleColor;
     }
-    W.DrawParticle(index, Params.BackgroundColor, oldX, oldY);
     W.DrawParticle(index,particleColor, x,y);
 }
 
-void Particles::DrawVelocities(RGBData *color) const
+void Particles::DrawVelocity(int index) const
 {
-    double factor = Params.VelocityLengthFactor;
+    const Particle& p = PManager->P(index);
     double rezScale = 1.0 / (double) Params.Scale;
+    double factor = Params.VelocityLengthFactor;
+    W.DrawLine(Params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+}
+
+void Particles::Draw() const
+{
+    W.ClearWindow(Params.BackgroundColor);
     for (int i = 0; i < PManager->PCount(); i++)
     {
         const Particle & p = PManager->P(i);
-        W.DrawLine(*color, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+        DrawParticle(i);
+        if (Params.DrawVelocities)
+        {
+            DrawVelocity(i);
+        }
     }
+    W.DrawScreen();
 }
 
 void Particles::Sleep( clock_t wait ){
@@ -189,7 +200,6 @@ void Particles::ReInit(void)
 
 void Particles::Init(void){
     InitRandom();
-    W.ClearWindow(Params.BackgroundColor);
     int MidX = Params.BorderDimensions.Get(0)/2;
     int MidY = Params.BorderDimensions.Get(1)/2;
     for (int n = 0; n < Params.ParticleCount; n++){
@@ -198,9 +208,7 @@ void Particles::Init(void){
         Vector position(MidX + pow(n, 1.0/3.0)*distance*Params.Scale*sin(n), MidY + pow(n, 1.0/3.0)*distance*Params.Scale*cos(n));
         double speedRange =  0.01;
         Vector velocity (-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));
-        int newParticleCount = PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
-        const Particle& p = PManager->P(newParticleCount - 1);
-        RedrawParticleAtNewPosition(n, p.Position, p.Position, p.Charge);
+        PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
     }
 
     if (Params.DoInteraction)
@@ -213,7 +221,7 @@ void Particles::Init(void){
         }
     }
 
-    W.DrawScreen();
+    Draw();
 }
 
 void Particles::AddParticle(int x, int y, double dx, double dy)
@@ -243,38 +251,21 @@ bool Particles::RemoveParticle(int x, int y)
         double distance = (position - PManager->P(closestParticle).Position).Abs();
         if (distance < Params.AtomicRadius)
         {
-            W.DrawParticle(closestParticle, Params.BackgroundColor, PManager->P(closestParticle).Position.Get(0), PManager->P(closestParticle).Position.Get(1));
             PManager->RemoveParticle(closestParticle);
-            W.ClearWindow(Params.BackgroundColor);
             removed = true;
         }
     }
+
+    if (removed)
+    {
+        Draw();
+    }
+
     return removed;
-}
-
-void Particles::VelocityDrawRemoveOld()
-{
-    if (Params.DrawVelocities)
-    {
-        DrawVelocities(&Params.BackgroundColor);
-    }
-}
-
-void Particles::VelocityDrawNew()
-{
-    if (Params.DrawVelocities)
-    {
-        DrawVelocities(&Params.VelocityColor);
-    }
 }
 
 void Particles::Update(){
     HandleKeyPress();
-
-    if ( !Params.DrawVelocitiesDoNotRedrawPrevious)
-    {
-        VelocityDrawRemoveOld();
-    }
 
     if (Params.CheckCollisions && Params.DoInteraction)
     {
@@ -288,11 +279,9 @@ void Particles::Update(){
         AvoidCollisions();
     }
 
-    UpdateParticlesPositionsAndDraw();
+    UpdateParticlesPositions();
 
-    VelocityDrawNew();
-
-    W.DrawScreen();
+    Draw();
 }
 
 void Particles::UpdateParticlesForcesAndVelocities()
@@ -327,13 +316,10 @@ void Particles::UpdateParticlesForcesAndVelocities()
     }
 }
 
-void Particles::UpdateParticlesPositionsAndDraw()
+void Particles::UpdateParticlesPositions()
 {
-    Vector oldPosition;
     for(int n1 = PManager->PCount() - 1; n1 >= 0; --n1){
-        oldPosition = PManager->P(n1).Position;
         PManager->UpdatePosition(n1);
-        RedrawParticleAtNewPosition(n1, oldPosition, PManager->P(n1).Position, PManager->P(n1).Charge);
     }
 }
 
@@ -405,9 +391,6 @@ void Particles::ResolveOverlapIfNeeded(int index1, int index2, double distance)
 
         PManager->SetPosition(index2, (p2.Position - centerOfMassPosition) * factor + centerOfMassPosition);
         PManager->SetPosition(index1, (p1.Position - centerOfMassPosition) * factor + centerOfMassPosition);
-
-        RedrawParticleAtNewPosition(index1, OldPosition1, p1.Position, p1.Charge);
-        RedrawParticleAtNewPosition(index2, OldPosition2, p2.Position, p2.Charge);
     }
 }
 
@@ -445,7 +428,7 @@ void Particles::HandleKeyPress()
     if (check =='4') {Params.MolecularBondingEnergy /= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
     if (check =='5') {Params.MolecularBondingEnergy *= 2; if (Params.MolecularBondingEnergy < 0.000000000001) Params.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.MolecularBondingEnergy << endl;}
     if (check =='i') {Params.DoInteraction = !Params.DoInteraction;  cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
-    if (check =='v') {VelocityDrawRemoveOld(); Params.DrawVelocities = !Params.DrawVelocities; VelocityDrawRemoveOld(); cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
+    if (check =='v') {Params.DrawVelocities = !Params.DrawVelocities; cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
     if (check =='/') {
         for (int i = PManager->PCount() -  1; i >= 0; --i){
             PManager->ChangeRadius(i, -0.1);

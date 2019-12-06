@@ -25,8 +25,6 @@ public:
     void Sleep(clock_t wait);
 
 private:
-    void DrawVelocities(RGBData* color) const;
-    void RedrawParticleAtNewPosition(int index, const Vector &oldPosition, const Vector &newPosition, double q);
     void ApplyForce(int n1, int n2);
 
     ParticlesViewInterface &W;
@@ -36,7 +34,7 @@ private:
 
     void HandleKeyPress();
     void AvoidCollisions();
-    void UpdateParticlesPositionsAndDraw();
+    void UpdateParticlesPositions();
     void UpdateParticlesForcesAndVelocities();
     void AddParticle(int x, int y, double dx, double dy);
     bool RemoveParticle(int x, int y);
@@ -45,8 +43,9 @@ private:
     void ReInit();
     void ResolveOverlapIfNeeded(int index1, int index2, double distance);
     bool CheckOverlap(const int index1, const int index2, const double distance) const;
-    void VelocityDrawRemoveOld();
-    void VelocityDrawNew();
+    void Draw() const;
+    void DrawParticle(int index) const;
+    void DrawVelocity(int index) const;
 };
 
 #endif
