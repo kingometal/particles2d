@@ -249,7 +249,7 @@ int ParticleManager::PCount() const
     return Impl->ParticleCount;
 }
 
-const Particle &ParticleManager::P(int index)
+const Particle &ParticleManager::P(int index) const
 {
     return Impl->ParticleN[index];
 }

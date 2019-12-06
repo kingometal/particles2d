@@ -10,6 +10,7 @@ class ParticleManager;
 class Config;
 class Vector;
 class RGBData;
+class ParticleDrawer;
 
 class Particles{
 public:
@@ -31,6 +32,7 @@ private:
     IUserInput& UserInput;
     ParticleManager* PManager;
     Config& Params;
+    ParticleDrawer* Drawer;
 
     void HandleKeyPress();
     void AvoidCollisions();
@@ -44,8 +46,6 @@ private:
     void ResolveOverlapIfNeeded(int index1, int index2, double distance);
     bool CheckOverlap(const int index1, const int index2, const double distance) const;
     void Draw() const;
-    void DrawParticle(int index) const;
-    void DrawVelocity(int index) const;
 };
 
 #endif

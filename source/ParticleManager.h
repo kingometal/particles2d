@@ -29,7 +29,7 @@ public:
     void FuseParticles(int index1, int index2);
     Vector GetFullForce(int index) const;
 
-    const Particle& P(int index);
+    const Particle& P(int index) const;
     int GetClosestParticle(int x, int y) const;
 private:
     ParticleManagerImpl* Impl;

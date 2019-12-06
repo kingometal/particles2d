@@ -10,17 +10,73 @@
 
 using namespace std;
 
+
+
+class ParticleDrawer
+    {
+    public:
+        ParticleDrawer() = default;
+        ~ParticleDrawer() = default;
+
+        void Draw(IParticlesView& view, const ParticleManager& pm, Config& params)
+        {
+            view.ClearWindow(params.BackgroundColor);
+            for (int i = 0; i < pm.PCount(); i++)
+            {
+                const Particle & p = pm.P(i);
+                DrawParticle(view, pm, params, i);
+                if (params.DrawVelocities)
+                {
+                    DrawVelocity(view, pm, params, i);
+                }
+            }
+            view.DrawScreen();
+        }
+
+    private:
+        void DrawParticle(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+        {
+            const Particle& p = pm.P(index);
+
+            int x = p.Position.X()/params.Scale;
+            int y = p.Position.Y()/params.Scale;
+            RGBData particleColor = params.UnchargedParticleColor;
+
+            if(p.Charge>0.0)
+            {
+                particleColor = params.PositivelyChargedParticleColor;
+            }
+            else if (p.Charge<0.0)
+            {
+                particleColor = params.NegativeChargedParticleColor;
+            }
+            view.DrawParticle(index,particleColor, x,y);
+        }
+
+        void DrawVelocity(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+        {
+            const Particle& p = pm.P(index);
+            double rezScale = 1.0 / (double) params.Scale;
+            double factor = params.VelocityLengthFactor;
+            view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+        }
+
+    };
+
+
 Particles::Particles(IParticlesView &window, IUserInput & userInput, Config &parameters):
     W(window),
     UserInput (userInput),
     PManager(new ParticleManager(0)),
-    Params(parameters)
+    Params(parameters),
+    Drawer (new ParticleDrawer())
 {
     Params.BorderDimensions.Set(window.GetSideX()* Params.Scale, window.GetSideY()*Params.Scale);
 }
 
 Particles::~Particles()
 {
+    delete Drawer;
     delete PManager;
 }
 
@@ -140,47 +196,20 @@ void Particles::ApplyForce(int n1, int n2)
 //    return(En);
 //}
 
-
-void Particles::DrawParticle(int index) const
-{
-    const Particle& p = PManager->P(index);
-
-    int x = p.Position.X()/Params.Scale;
-    int y = p.Position.Y()/Params.Scale;
-    RGBData particleColor = Params.UnchargedParticleColor;
-
-    if(p.Charge>0.0)
-    {
-        particleColor = Params.PositivelyChargedParticleColor;
-    }
-    else if (p.Charge<0.0)
-    {
-        particleColor = Params.NegativeChargedParticleColor;
-    }
-    W.DrawParticle(index,particleColor, x,y);
-}
-
-void Particles::DrawVelocity(int index) const
-{
-    const Particle& p = PManager->P(index);
-    double rezScale = 1.0 / (double) Params.Scale;
-    double factor = Params.VelocityLengthFactor;
-    W.DrawLine(Params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
-}
-
 void Particles::Draw() const
 {
-    W.ClearWindow(Params.BackgroundColor);
-    for (int i = 0; i < PManager->PCount(); i++)
-    {
-        const Particle & p = PManager->P(i);
-        DrawParticle(i);
-        if (Params.DrawVelocities)
-        {
-            DrawVelocity(i);
-        }
-    }
-    W.DrawScreen();
+    Drawer->Draw(W, *PManager, Params);
+//    W.ClearWindow(Params.BackgroundColor);
+//    for (int i = 0; i < PManager->PCount(); i++)
+//    {
+//        const Particle & p = PManager->P(i);
+//        DrawParticle(i);
+//        if (Params.DrawVelocities)
+//        {
+//            DrawVelocity(i);
+//        }
+//    }
+//    W.DrawScreen();
 }
 
 void Particles::Sleep( clock_t wait ){
