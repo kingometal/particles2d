@@ -28,14 +28,7 @@ void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, RGBData color, int x, 
 
 void ParticlesViewSdlAdapter::ClearWindow(RGBData color)
 {
-    for (int x = 0; x < SideX; x++)
-    {
-        for (int y = 0; y < SideY; y++)
-        {
-            Presenter.StorePoint(x, y, color);
-        }
-    }
-    Presenter.Present();
+    Presenter.StoreRectangle(0, 0, SideX, SideY, color);
 }
 
 void ParticlesViewSdlAdapter::DrawParticle(RGBData colorData, int x, int y)
