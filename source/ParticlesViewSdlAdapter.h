@@ -1,10 +1,10 @@
 #ifndef PARTICLESVIEWSDLADAPTER_H
 #define PARTICLESVIEWSDLADAPTER_H
-#include "interfaces/ParticlesViewInterface.h"
+#include "interfaces/IParticlesView.h"
 
 class IPresenter;
 
-class ParticlesViewSdlAdapter: public ParticlesViewInterface
+class ParticlesViewSdlAdapter: public IParticlesView
 {
 public:
     ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY, int maxFPS);

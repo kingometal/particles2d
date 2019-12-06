@@ -169,7 +169,17 @@ public:
     int* SkippedForceCalculations;
 };
 
-int ParticleManager::GetClosestParticle(int x, int y)
+ParticleManager::ParticleManager(int particleCount)
+    : Impl(new ParticleManagerImpl(particleCount))
+{
+}
+
+ParticleManager::~ParticleManager()
+{
+    delete Impl;
+}
+
+int ParticleManager::GetClosestParticle(int x, int y) const
 {
     int closestParticle = -1;
     double shortestDistance = MAX_FLOAT;
@@ -184,18 +194,6 @@ int ParticleManager::GetClosestParticle(int x, int y)
         }
     }
     return closestParticle;
-}
-
-
-
-ParticleManager::ParticleManager(int particleCount)
-    : Impl(new ParticleManagerImpl(particleCount))
-{
-}
-
-ParticleManager::~ParticleManager()
-{
-    delete Impl;
 }
 
 int ParticleManager::AddParticle(const Vector& position, const Vector& velocity, const double mass, const double charge, const double radius)

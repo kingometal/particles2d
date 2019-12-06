@@ -4,7 +4,7 @@
 #include <ctime>
 
 class Particle;
-class ParticlesViewInterface;
+class IParticlesView;
 class IUserInput;
 class ParticleManager;
 class Config;
@@ -13,7 +13,7 @@ class RGBData;
 
 class Particles{
 public:
-    Particles(ParticlesViewInterface& window, IUserInput& userInput, Config& parameters);
+    Particles(IParticlesView &window, IUserInput& userInput, Config& parameters);
     ~Particles();
     void Update();
     void Init();
@@ -27,7 +27,7 @@ public:
 private:
     void ApplyForce(int n1, int n2);
 
-    ParticlesViewInterface &W;
+    IParticlesView &W;
     IUserInput& UserInput;
     ParticleManager* PManager;
     Config& Params;

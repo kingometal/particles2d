@@ -1,7 +1,7 @@
 #include "Particles.h"
 #include "ParticleManager.h"
 #include "interfaces/IUserInput.h"
-#include "interfaces/ParticlesViewInterface.h"
+#include "interfaces/IParticlesView.h"
 #include "Vector.h"
 #include "Particle.h"
 #include "Config.h"
@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Particles::Particles(ParticlesViewInterface &window, IUserInput & userInput, Config &parameters):
+Particles::Particles(IParticlesView &window, IUserInput & userInput, Config &parameters):
     W(window),
     UserInput (userInput),
     PManager(new ParticleManager(0)),

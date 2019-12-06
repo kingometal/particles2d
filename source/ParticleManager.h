@@ -14,9 +14,6 @@ public:
     void RemoveParticle(const int index);
     void UpdateVelocity(const int index, const Vector &maxCoord, const double dissipation);
     void UpdatePosition(const int index);
-    void ResetForce(const int index);
-    void ResetForces();
-    void AddForce(int index, Vector force);
     void StoreForce(int index1, int index2, Vector force);
     void SkipForceCalculation(int index1, int index2);
     int GetNumSkippedForceCalculations(int index1, int index2);
@@ -33,7 +30,7 @@ public:
     Vector GetFullForce(int index) const;
 
     const Particle& P(int index);
-    int GetClosestParticle(int x, int y);
+    int GetClosestParticle(int x, int y) const;
 private:
     ParticleManagerImpl* Impl;
 };

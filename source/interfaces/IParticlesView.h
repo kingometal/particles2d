@@ -1,13 +1,13 @@
-#ifndef PARTICLESVIEWINTERFACE_H
-#define PARTICLESVIEWINTERFACE_H
+#ifndef I_PARTICLES_VIEW_H
+#define I_PARTICLES_VIEW_H
 
 #include "../RGBData.h"
 
-class ParticlesViewInterface
+class IParticlesView
 {
 public:
-    ParticlesViewInterface() {}
-    virtual ~ParticlesViewInterface() {}
+    IParticlesView() {}
+    virtual ~IParticlesView() {}
 
     virtual void DrawParticle(int index, RGBData color, int x, int y) = 0;
     virtual void DrawParticle(RGBData color, int x, int y) = 0;
@@ -19,5 +19,5 @@ public:
 
 };
 
-#endif // PARTICLESVIEWINTERFACE_H
+#endif // I_PARTICLES_VIEW_H
 
