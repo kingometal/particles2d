@@ -230,11 +230,35 @@ void Particles::Init(void){
     int MidX = Params.BorderDimensions.Get(0)/2;
     int MidY = Params.BorderDimensions.Get(1)/2;
     for (int n = 0; n < Params.ParticleCount; n++){
+        Vector velocity (0,0); 
+        Vector position (MidX, MidY);
         int positiveOrNegative = n%2 == 0 ? -1 : 1;
-        double distance = 30.0;
-        Vector position(MidX + pow(n, 1.0/3.0)*distance*sin(n), MidY + pow(n, 1.0/3.0)*distance*cos(n));
-        double speedRange =  0.01;
-        Vector velocity (-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));
+        double desiredParticleDistance = Params.InitialParticleDistance;
+        if (Params.InitialPositioning == 0 || Params.InitialPositioning == 1)
+        {
+            double angle = 2.0 * M_PI / (double) Params.ParticleCount;
+
+            double calculatedDistanceFromCenterOfMass = desiredParticleDistance / angle;          
+            position.Set(MidX + calculatedDistanceFromCenterOfMass*sin(angle*n), MidY + calculatedDistanceFromCenterOfMass*cos(angle*n));
+            double speedRange =  0.22;
+            Vector relativePosition = position - Vector(MidX, MidY);
+            cout.precision(17);
+            
+            if (Params.InitialPositioning == 1)
+            {
+                if (relativePosition.Abs() > 0)
+                {
+                    velocity.Set(relativePosition.Y()/relativePosition.Abs()*speedRange , -relativePosition.X()/relativePosition.Abs()*speedRange);
+                }
+            }
+        }
+        else if (Params.InitialPositioning == 2)
+        {
+            position.Set(MidX + pow(n, 1.0/3.0)*desiredParticleDistance*sin(n), MidY + pow(n, 1.0/3.0)*desiredParticleDistance*cos(n));
+            double speedRange =  0.01;
+            velocity.Set(-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));
+        }
+
         PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
     }
 

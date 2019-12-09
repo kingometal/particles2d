@@ -71,6 +71,8 @@ Config::Config(void)
     , DrawVelocities(false)
     , VelocityLengthFactor(100.0)
     , VelocityColor (0, 0, 0, 255)
+    , InitialPositioning(0)
+    , InitialParticleDistance(30.0)
 {            
     config_t config;
     int tempColorR;
@@ -142,6 +144,9 @@ Config::Config(void)
     GetConfigBool(config, "RestrictInterParticleForce", RestrictInterParticleForce);
     GetConfigDouble(config, "MaxInterParticleForce", MaxInterParticleForce);
     GetConfigBool(config, "WriteInterParticleForceWarning", WriteInterParticleForceWarning);
+
+    GetConfigInt(config, "InitialPositioning", InitialPositioning);
+    GetConfigDouble(config, "InitialParticleDistance", InitialParticleDistance);
 
     config_destroy(&config);
 }

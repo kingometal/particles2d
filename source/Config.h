@@ -60,6 +60,9 @@ public:
     double MaxInterParticleForce;
     bool WriteInterParticleForceWarning;
     bool ResetOnMaxAllowedForce;
+
+    int InitialPositioning;
+    double InitialParticleDistance;
 };
 
 #endif // PARTICLES_PARAMETERS_H
