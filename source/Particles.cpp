@@ -262,6 +262,8 @@ void Particles::Init(void){
         PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
     }
 
+    CheckParticlePositionsAreWithinWindow();
+
     if (Params.DoInteraction)
     {
         for (int n = 0; n < Params.ParticleCount; n++){
@@ -466,6 +468,14 @@ void Particles::HandleKeyPress()
         AddParticle(click.x*Params.Scale, click.y*Params.Scale, click.dx, click.dy);
     }
 
+    bool windowSizeChanged = UserInput.CheckSizeChanged();
+    if (windowSizeChanged)
+    {
+        cout << "Window Size changed to " << W.GetSideX() << ":" << W.GetSideY() << endl;
+        Params.BorderDimensions.Set(W.GetSideX(), W.GetSideY());
+        CheckParticlePositionsAreWithinWindow();
+    }
+
     if (check != 0 && check != '0')
     {
         cout << check << endl;
@@ -493,3 +503,20 @@ void Particles::HandleKeyPress()
         cout << "radius increased by 0.1; it is now " << PManager->P(0).Radius << endl;
     }
 }
+
+void Particles::CheckParticlePositionsAreWithinWindow()
+{
+    for (int i = 0; i < PManager->PCount(); i++)
+    {
+        if (PManager->P(i).Position.X() > Params.BorderDimensions.X())
+        {
+            PManager->SetPosition(i, Vector(Params.BorderDimensions.X(), PManager->P(i).Position.Y()));
+        }
+
+        if (PManager->P(i).Position.Y() > Params.BorderDimensions.Y())
+        {
+            PManager->SetPosition(i, Vector(PManager->P(i).Position.X(), Params.BorderDimensions.Y()));
+        }
+    }
+}
+

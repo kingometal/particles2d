@@ -7,7 +7,7 @@ ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int side
     : Presenter(presenter)
     , MaxFPS(maxFPS)
 {
-    Presenter.Init(sideX, sideY, false);
+    Presenter.Init(sideX, sideY, true);
     RGBData colorData(255,255,255,0);
     ClearWindow(colorData);
     Presenter.Present();
