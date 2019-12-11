@@ -65,7 +65,7 @@ public:
                 }
                 else
                 {
-                    *window = SDL_CreateWindow( "Simple lightweight per-pixel drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | (resizable?SDL_WINDOW_RESIZABLE:0));
+                    *window = SDL_CreateWindow( "Particles 2D", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | (resizable?SDL_WINDOW_RESIZABLE:0));
                     if( window == NULL )
                     {
                         printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -157,12 +157,12 @@ void Presenter::StoreRectangle(int x, int y, int dx, int dy, const RGBData &data
 
 void Presenter::Present(int maxFps)
 {
-    SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
     double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
     double fps = 1.0/(secondsCounter - Pimpl->lastFPSOutputTime);
 
     if (0 == maxFps || fps < maxFps)
     {
+        SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
         Pimpl->PrintText(Pimpl->Renderer, std::to_string(fps).c_str(), fontColor, Pimpl->font, 0,0 );
 
         SDL_RenderPresent(Pimpl->Renderer);
@@ -178,13 +178,8 @@ void Presenter::Init(int width, int height, bool resizable)
 
 void Presenter::ClearWindow(RGBData &color)
 {
-    int w;
-    int h;
-
-    GetWindowSize(w, h);
     SDL_SetRenderDrawColor(Pimpl->Renderer, color.GetR(), color.GetG(), color.GetB(), color.GetA());
-    SDL_Rect rect = {0, 0, w, h};
-    SDL_RenderFillRect(Pimpl->Renderer, &rect);
+    SDL_RenderClear(Pimpl->Renderer);
 }
 
 void Presenter::GetWindowSize(int &x, int &y) const
