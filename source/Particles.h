@@ -46,6 +46,7 @@ private:
     void ResolveOverlapIfNeeded(int index1, int index2, double distance);
     bool CheckOverlap(const int index1, const int index2, const double distance) const;
     void CheckParticlePositionsAreWithinWindow();
+    void UpdateBorderDimensions();
     void Draw() const;
 };
 

@@ -127,7 +127,7 @@ Particles::Particles(IParticlesView &window, IUserInput & userInput, Config &par
     Params(parameters),
     Drawer (new ParticleDrawer())
 {
-    Params.BorderDimensions.Set(window.GetSideX()* Params.Scale, window.GetSideY()*Params.Scale);
+    UpdateBorderDimensions();
 }
 
 Particles::~Particles()
@@ -471,7 +471,7 @@ void Particles::HandleKeyPress()
     bool windowSizeChanged = UserInput.CheckSizeChanged();
     if (windowSizeChanged)
     {
-        Params.BorderDimensions.Set(W.GetSideX(), W.GetSideY());
+        UpdateBorderDimensions();
         CheckParticlePositionsAreWithinWindow();
     }
 
@@ -517,5 +517,10 @@ void Particles::CheckParticlePositionsAreWithinWindow()
             PManager->SetPosition(i, Vector(PManager->P(i).Position.X(), Params.BorderDimensions.Y()));
         }
     }
+}
+
+void Particles::UpdateBorderDimensions()
+{
+    Params.BorderDimensions.Set(W.GetSideX()* Params.Scale, W.GetSideY()*Params.Scale);
 }
 
