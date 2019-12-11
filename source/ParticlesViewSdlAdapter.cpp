@@ -5,19 +5,11 @@
 
 ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY, int maxFPS)
     : Presenter(presenter)
-    , SideX(sideX)
-    , SideY(sideY)
     , MaxFPS(maxFPS)
 {
-    Presenter.Init(sideY, sideX, false);
+    Presenter.Init(sideX, sideY, false);
     RGBData colorData(255,255,255,0);
-    for (int x = 0; x < sideX; x++)
-    {
-        for (int y = 0; y < sideY; y++)
-        {
-            Presenter.StorePoint(x, y, colorData);
-        }
-    }
+    ClearWindow(colorData);
     Presenter.Present();
 }
 
@@ -28,7 +20,7 @@ void ParticlesViewSdlAdapter::DrawParticle(int /*index*/, RGBData color, int x, 
 
 void ParticlesViewSdlAdapter::ClearWindow(RGBData color)
 {
-    Presenter.StoreRectangle(0, 0, SideX, SideY, color);
+    Presenter.ClearWindow(color);
 }
 
 void ParticlesViewSdlAdapter::DrawParticle(RGBData colorData, int x, int y)
@@ -61,9 +53,6 @@ void ParticlesViewSdlAdapter::DrawLine(RGBData color, int x, int y, int dx, int 
     Presenter.StoreLine(x, y, dx, dy, color);
 }
 
-int count = 0;
-long long LastUpdate = 0;
-
 void ParticlesViewSdlAdapter::DrawScreen()
 {
     Presenter.Present(MaxFPS);
@@ -71,11 +60,15 @@ void ParticlesViewSdlAdapter::DrawScreen()
 
 int ParticlesViewSdlAdapter::GetSideX()
 {
-    return SideX;
+    int x, y;
+    Presenter.GetWindowSize(x, y);
+    return x;
 }
 
 int ParticlesViewSdlAdapter::GetSideY()
 {
-    return SideY;
+    int x, y;
+    Presenter.GetWindowSize(x, y);
+    return y;
 }
 

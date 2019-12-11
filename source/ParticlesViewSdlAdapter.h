@@ -19,8 +19,6 @@ public:
     void ClearWindow(RGBData color);
 private:
     IPresenter& Presenter;
-    int SideX;
-    int SideY;
     int MaxFPS;
 };
 
