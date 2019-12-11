@@ -3,20 +3,27 @@
 
 namespace
 {
-void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastMouseClick, MouseClick& lastMouseDown)
+void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastMouseClick, MouseClick& lastMouseDown, bool& windowSizeChanged)
 {
 
     SDL_Event e;
     // Handle user input
     while( SDL_PollEvent( &e ) != 0)
     {
-        if ((SDL_QUIT == e.type || (SDL_KEYDOWN == e.type && SDLK_q == e.key.keysym.sym) ))
+        switch (e.type)
         {
+        case SDL_WINDOWEVENT:
+            switch (e.window.event)
+            {
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                windowSizeChanged = true;
+                break;
+            }
+            break;
+        case SDL_QUIT:
             QuitRequested = true;
-        }
-        else if (SDL_KEYDOWN == e.type)
-        {
-
+            break;
+        case SDL_KEYDOWN:
             switch(e.key.keysym.sym)
             {
             case SDLK_KP_PLUS:
@@ -63,6 +70,7 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
                 break;
             case SDLK_q:
                 LastKeyPressed = 'q';
+                QuitRequested = true;
                 break;
             case SDLK_r:
                 LastKeyPressed = 'r';
@@ -77,9 +85,8 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
                 LastKeyPressed = 'v';
                 break;
             }
-        }
-        else if (SDL_MOUSEBUTTONDOWN == e.type)
-        {
+            break;
+        case SDL_MOUSEBUTTONDOWN :
             if (e.button.button == SDL_BUTTON_LEFT)
             {
                 lastMouseDown.leftclick = true;
@@ -90,9 +97,8 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
             }
             lastMouseDown.x = e.button.x;
             lastMouseDown.y = e.button.y;
-        }
-        else if (SDL_MOUSEBUTTONUP == e.type)
-        {
+            break;
+        case SDL_MOUSEBUTTONUP:
             if (e.button.button == SDL_BUTTON_LEFT)
             {
                 lastMouseClick.leftclick = true;
@@ -105,6 +111,7 @@ void ProcessEvents(bool & QuitRequested, char& LastKeyPressed, MouseClick& lastM
             lastMouseClick.y = ((SDL_MouseButtonEvent&) e).y;
             lastMouseClick.dx = lastMouseClick.x - lastMouseDown.x;
             lastMouseClick.dy = lastMouseClick.y - lastMouseDown.y;
+            break;
         }
     }
 }
@@ -115,12 +122,13 @@ UserInput::UserInput()
     , LastKeyPressed(0)
     , LastMouseClick()
     , LastMouseDown()
+    , WindowSizeChanged(false)
 {
 }
 
 bool UserInput::IsQuitRequested()
 {
-    ProcessEvents(QuitRequested, LastKeyPressed, LastMouseClick, LastMouseDown);
+    ProcessEvents(QuitRequested, LastKeyPressed, LastMouseClick, LastMouseDown, WindowSizeChanged);
     return QuitRequested;
 }
 
@@ -136,5 +144,12 @@ MouseClick UserInput::CheckMouseClick()
     MouseClick returnValue = LastMouseClick;
     LastMouseClick.leftclick = false;
     LastMouseClick.rightclick = false;
+    return returnValue;
+}
+
+bool UserInput::CheckSizeChanged()
+{
+    bool returnValue = WindowSizeChanged;
+    WindowSizeChanged = false;
     return returnValue;
 }

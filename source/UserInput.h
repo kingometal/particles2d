@@ -9,11 +9,13 @@ public:
     bool IsQuitRequested();
     char CheckKeyPress();
     MouseClick CheckMouseClick();
+    bool CheckSizeChanged();
 private:
     bool QuitRequested;
     char LastKeyPressed;
     MouseClick LastMouseClick;
     MouseClick LastMouseDown;
+    bool WindowSizeChanged;
 };
 
 #endif // USERINPUT_H

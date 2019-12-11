@@ -19,6 +19,7 @@ public:
     virtual bool IsQuitRequested() = 0;
     virtual char CheckKeyPress() = 0;
     virtual MouseClick CheckMouseClick() = 0;
+    virtual bool CheckSizeChanged() = 0;
 };
 
 #endif // I_USERINPUT_H
