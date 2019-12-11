@@ -471,7 +471,6 @@ void Particles::HandleKeyPress()
     bool windowSizeChanged = UserInput.CheckSizeChanged();
     if (windowSizeChanged)
     {
-        cout << "Window Size changed to " << W.GetSideX() << ":" << W.GetSideY() << endl;
         Params.BorderDimensions.Set(W.GetSideX(), W.GetSideY());
         CheckParticlePositionsAreWithinWindow();
     }
