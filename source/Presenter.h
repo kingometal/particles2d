@@ -15,6 +15,7 @@ public:
     void Init(int height, int width, bool resizable);
     void ClearWindow(RGBData& color);
     void StoreRectangle(int x, int y, int dx, int dy, const RGBData &data);
+    void GetWindowSize(int &x, int &y) const;
 private:
     class PresenterImpl;
     PresenterImpl* Pimpl;

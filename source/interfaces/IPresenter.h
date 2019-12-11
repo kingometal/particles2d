@@ -14,6 +14,7 @@ public:
     virtual void StoreRectangle(int x, int y, int dx, int dy, const RGBData &data) = 0;
     virtual void Present(int maxFps = 0) = 0;
     virtual void ClearWindow(RGBData& color) = 0;
+    virtual void GetWindowSize(int &x, int &y) const = 0;
 };
 
 #endif // IPRESENTER_H

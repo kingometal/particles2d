@@ -181,8 +181,13 @@ void Presenter::ClearWindow(RGBData &color)
     int w;
     int h;
 
-    SDL_GL_GetDrawableSize(Pimpl->gWindow, &w, &h);
+    GetWindowSize(w, h);
     SDL_SetRenderDrawColor(Pimpl->Renderer, color.GetR(), color.GetG(), color.GetB(), color.GetA());
     SDL_Rect rect = {0, 0, w, h};
     SDL_RenderFillRect(Pimpl->Renderer, &rect);
+}
+
+void Presenter::GetWindowSize(int &x, int &y) const
+{
+    return SDL_GL_GetDrawableSize(Pimpl->gWindow, &x, &y);
 }
