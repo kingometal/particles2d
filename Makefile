@@ -18,6 +18,9 @@ clean:
 	if [ -d ${OUTDIR} ]; then rm -rf ${OUTDIR} ; fi
 	if [ -e ./${EXECUTABLE} ]; then rm ./${EXECUTABLE} ; fi
 
+rebuild: clean all
+
+
 directories: $(OUTDIR)
 
 $(OUTDIR):
