@@ -8,7 +8,7 @@ using namespace std;
 class Presenter::PresenterImpl
 {
 public:
-    PresenterImpl(int height, int width, bool resizable)
+    PresenterImpl(int width, int height, bool resizable)
     {
         Init(&gWindow, &Renderer, &font, width, height, resizable);
         PrintRendererInfo(Renderer);
@@ -171,9 +171,9 @@ void Presenter::Present(int maxFps)
     }
 }
 
-void Presenter::Init(int height, int width, bool resizable)
+void Presenter::Init(int width, int height, bool resizable)
 {
-    Pimpl = new PresenterImpl(height, width, resizable);
+    Pimpl = new PresenterImpl(width, height, resizable);
 }
 
 void Presenter::ClearWindow(RGBData &color)

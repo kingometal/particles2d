@@ -12,7 +12,7 @@ public:
     void StorePoint(int x, int y, const RGBData &data);
     void StoreLine(int x, int y, int dx, int dy, const RGBData &data);
     void Present(int maxFps);
-    void Init(int height, int width, bool resizable);
+    void Init(int width, int height, bool resizable);
     void ClearWindow(RGBData& color);
     void StoreRectangle(int x, int y, int dx, int dy, const RGBData &data);
     void GetWindowSize(int &x, int &y) const;
