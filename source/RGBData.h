@@ -9,15 +9,15 @@ public:
     RGBData();
     ~RGBData();
 
-    char GetR() const;
-    char GetG() const;
-    char GetB() const;
-    char GetA() const;
+    unsigned char GetR() const;
+    unsigned char GetG() const;
+    unsigned char GetB() const;
+    unsigned char GetA() const;
 
 private:
-    char R;
-    char G;
-    char B;
-    char A;
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
+    unsigned char A;
 };
 #endif // RGBDATA_H

@@ -31,22 +31,22 @@ RGBData::~RGBData()
 {
 }
 
-char RGBData::GetR() const
+unsigned char RGBData::GetR() const
 {
     return R;
 }
 
-char RGBData::GetG() const
+unsigned char RGBData::GetG() const
 {
     return G;
 }
 
-char RGBData::GetB() const
+unsigned char RGBData::GetB() const
 {
     return B;
 }
 
-char RGBData::GetA() const
+unsigned char RGBData::GetA() const
 {
     return A;
 }
