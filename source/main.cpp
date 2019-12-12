@@ -6,11 +6,15 @@
 
 int main(void)
 {
-    Presenter* presenter = new Presenter();
     Config* parameters = new Config();
-    IParticlesView* view = new ParticlesViewSdlAdapter(*presenter, parameters->WindowSideSizeX, parameters->WindowSideSizeY, parameters->MaxFPS);
-    UserInput* userInput = new UserInput();
 
+    Presenter* presenter = new Presenter();
+    if (!presenter->Init(parameters->WindowSideSizeX, parameters->WindowSideSizeY))
+    {
+        return 0;
+    }
+    IParticlesView* view = new ParticlesViewSdlAdapter(*presenter);
+    UserInput* userInput = new UserInput();
     Particles Ps(*view, *userInput, *parameters);
     Ps.Init();
     do
@@ -18,6 +22,7 @@ int main(void)
         Ps.Update();
     }
     while (! userInput->IsQuitRequested());
+
     delete view;
     delete presenter;
     delete userInput;

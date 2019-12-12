@@ -3,11 +3,9 @@
 #include "RGBData.h"
 #include <chrono>
 
-ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY, int maxFPS)
+ParticlesViewSdlAdapter::ParticlesViewSdlAdapter(IPresenter& presenter)
     : Presenter(presenter)
-    , MaxFPS(maxFPS)
 {
-    Presenter.Init(sideX, sideY, true);
     RGBData colorData(255,255,255,0);
     ClearWindow(colorData);
     Presenter.Present();
@@ -55,7 +53,7 @@ void ParticlesViewSdlAdapter::DrawLine(RGBData color, int x, int y, int dx, int 
 
 void ParticlesViewSdlAdapter::DrawScreen()
 {
-    Presenter.Present(MaxFPS);
+    Presenter.Present();
 }
 
 int ParticlesViewSdlAdapter::GetSideX()

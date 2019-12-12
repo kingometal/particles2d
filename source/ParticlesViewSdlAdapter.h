@@ -7,7 +7,7 @@ class IPresenter;
 class ParticlesViewSdlAdapter: public IParticlesView
 {
 public:
-    ParticlesViewSdlAdapter(IPresenter& presenter, int sideX, int sideY, int maxFPS);
+    ParticlesViewSdlAdapter(IPresenter& presenter);
 
     // ParticlesViewInterface interface
     void DrawParticle(int index, RGBData color, int x, int y);
@@ -19,7 +19,6 @@ public:
     void ClearWindow(RGBData color);
 private:
     IPresenter& Presenter;
-    int MaxFPS;
 };
 
 #endif // PARTICLESVIEWSDLADAPTER_H

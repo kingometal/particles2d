@@ -5,18 +5,83 @@
 #include <SDL2/SDL_ttf.h>
 using namespace std;
 
+namespace MySDL
+{
+bool Init(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font, int width, int height, string title, string fontPath, int fontSize, Uint32 sdlWindowFlags, Uint32 sdlRendererFlags)
+{
+    bool success = false;
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+    {
+        cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
+    }
+    else
+    {
+        if (0 > TTF_Init())
+        {
+            cout << "TTF could not initialize! TTF_Error: " << TTF_GetError() << endl;
+        }
+        else
+        {
+            *font = TTF_OpenFont(fontPath.c_str(), fontSize); //this opens a font style and sets a size
+            if (NULL == *font)
+            {
+                cout << "can not create font! TTF_Error: " << TTF_GetError() << endl;
+                TTF_Quit();
+                SDL_Quit();
+            }
+            else
+            {
+                *window = SDL_CreateWindow( title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, sdlWindowFlags);
+                if( window == NULL )
+                {
+                    cout << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
+                    TTF_CloseFont(*font);
+                    TTF_Quit();
+                    SDL_Quit();
+                }
+                else
+                {
+                    *renderer = SDL_CreateRenderer(*window, -1, sdlRendererFlags);
+                    if (NULL == renderer)
+                    {
+                        cout << "Can not create renderer! SDL_Error: " << SDL_GetError() << endl;
+                        SDL_DestroyWindow(*window);
+                        TTF_CloseFont(*font);
+                        TTF_Quit();
+                        SDL_Quit();
+                    }
+                    else
+                    {
+                        success = true;
+                    }
+                }
+            }
+        }
+    }
+    return success;
+}
+
+void DeInit(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font)
+{
+    SDL_DestroyRenderer(*renderer);
+    SDL_DestroyWindow( *window );
+    TTF_CloseFont(*font);
+    TTF_Quit();
+    SDL_Quit();
+}
+}
+
+
 class Presenter::PresenterImpl
 {
 public:
-    PresenterImpl(int width, int height, bool resizable)
+    PresenterImpl()
     {
-        Init(&gWindow, &Renderer, &font, width, height, resizable);
-        PrintRendererInfo(Renderer);
     }
 
     ~PresenterImpl()
     {
-        DeInit(&gWindow, &Renderer, &font);
+        MySDL::DeInit(&gWindow, &Renderer, &font);
     }
 
     void PrintRendererInfo(SDL_Renderer *renderer)
@@ -42,69 +107,13 @@ public:
         if (drinfo.flags & SDL_RENDERER_TARGETTEXTURE) cout << " the  renderer supports rendering to texture" << endl;
     }
 
-    bool Init(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font, int width, int height, bool resizable)
+    void PrintText(const char* text, SDL_Color& color, int x, int y)
     {
-        bool success = false;
-        if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-        {
-            printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-        }
-        else
-        {
-            if (0 > TTF_Init())
-            {
-                printf( "TTF could not initialize! TTF_Error: %s\n", TTF_GetError() );
-            }
-            else
-            {
-                *font = TTF_OpenFont("FreeMono.ttf", 24); //this opens a font style and sets a size
-                if (NULL == *font)
-                {
-                    std::cout << "can not create font" << std::endl;
-                    std::cout << TTF_GetError() << std::endl;
-                }
-                else
-                {
-                    *window = SDL_CreateWindow( "Particles 2D", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | (resizable?SDL_WINDOW_RESIZABLE:0));
-                    if( window == NULL )
-                    {
-                        printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-                    }
-                    else
-                    {
-                        *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_SOFTWARE);
-                        //*renderer = SDL_CreateRenderer(*window, -1, 0);
-                        if (NULL == renderer)
-                        {
-                            printf( "Can not get surface! SDL_Error: %s\n", SDL_GetError() );
-                        }
-                        else
-                        {
-                            success = true;
-                        }
-                    }
-                }
-            }
-        }
-        return success;
-    }
-
-    void DeInit(SDL_Window** window, SDL_Renderer **renderer, TTF_Font** font)
-    {
-        TTF_CloseFont(*font);
-        TTF_Quit();
-        SDL_DestroyRenderer(*renderer);
-        SDL_DestroyWindow( *window );
-        SDL_Quit();
-    }
-
-    void PrintText(SDL_Renderer* renderer, const char* text, SDL_Color& color, TTF_Font* font, int x, int y)
-    {
-        SDL_Color backgroundColor {0,0,0,0};
-        SDL_Surface* surfaceMessage = TTF_RenderText(font, text, color, backgroundColor); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+        SDL_Surface* surfaceMessage = TTF_RenderText(font, text, color, color); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+        SDL_SetColorKey(surfaceMessage, SDL_TRUE, 0);
         if (surfaceMessage)
         {
-            SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //now you can convert it into a texture
+            SDL_Texture* Message = SDL_CreateTextureFromSurface(Renderer, surfaceMessage); //now you can convert it into a texture
             if (Message)
             {
                 SDL_Rect Message_rect; //create a rect
@@ -113,7 +122,7 @@ public:
                 Message_rect.w = surfaceMessage->w; // controls the width of the rect
                 Message_rect.h = surfaceMessage->h; // controls the height of the rect
 
-                SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+                SDL_RenderCopy(Renderer, Message, NULL, &Message_rect);
                 SDL_DestroyTexture(Message);
             }
             SDL_FreeSurface(surfaceMessage);
@@ -127,7 +136,7 @@ public:
 };
 
 Presenter::Presenter()
-    : Pimpl(NULL)
+    : Pimpl(new PresenterImpl())
 {
 }
 
@@ -148,6 +157,18 @@ void Presenter::StoreLine(int x, int y, int dx, int dy, const RGBData &data)
     SDL_RenderDrawLine(Pimpl->Renderer, x, y, x+dx, y+dy);
 }
 
+SDL_Color RGBDataToSDLColor(const RGBData &color)
+{
+    return SDL_Color {color.GetR(), color.GetG(), color.GetB(), color.GetA()};
+}
+
+void Presenter::StoreText(const char *text, const RGBData &color, int x, int y)
+{
+    SDL_Color fontColor = RGBDataToSDLColor(color);  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+    Pimpl->PrintText(text, fontColor, x, y);
+}
+
+
 void Presenter::StoreRectangle(int x, int y, int dx, int dy, const RGBData &data)
 {
     SDL_SetRenderDrawColor(Pimpl->Renderer, data.GetR(), data.GetG(), data.GetB(), data.GetA());
@@ -155,25 +176,15 @@ void Presenter::StoreRectangle(int x, int y, int dx, int dy, const RGBData &data
     SDL_RenderFillRect(Pimpl->Renderer, &rect);
 }
 
-void Presenter::Present(int maxFps)
+void Presenter::Present()
 {
-    double secondsCounter = SDL_GetPerformanceCounter()/(double) SDL_GetPerformanceFrequency();
-    double fps = 1.0/(secondsCounter - Pimpl->lastFPSOutputTime);
-
-    if (0 == maxFps || fps < maxFps)
-    {
-        SDL_Color fontColor = {255, 255, 255};  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
-        Pimpl->PrintText(Pimpl->Renderer, std::to_string(fps).c_str(), fontColor, Pimpl->font, 0,0 );
-
-        SDL_RenderPresent(Pimpl->Renderer);
-        
-        Pimpl->lastFPSOutputTime = secondsCounter;
-    }
+    SDL_RenderPresent(Pimpl->Renderer);
+       
 }
 
-void Presenter::Init(int width, int height, bool resizable)
+bool Presenter::Init(int width, int height)
 {
-    Pimpl = new PresenterImpl(width, height, resizable);
+    return MySDL::Init(&Pimpl->gWindow, &Pimpl->Renderer, &Pimpl->font, width, height, "Particles2D", "FreeMono.ttf", 24, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE, SDL_RENDERER_SOFTWARE);
 }
 
 void Presenter::ClearWindow(RGBData &color)
