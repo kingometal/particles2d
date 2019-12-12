@@ -7,8 +7,10 @@
 #include "Config.h"
 #include "interfaces/Rnd.h"
 #include <iostream>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 Vector GetGravity(const Particle& p1 , const Particle& p2, double reziprocalDistance, double G)
 {
@@ -76,17 +78,38 @@ class ParticleDrawer
 
         void Draw(IParticlesView& view, const ParticleManager& pm, Config& params)
         {
-            view.ClearWindow(params.BackgroundColor);
-            for (int i = 0; i < pm.PCount(); i++)
+            microseconds timeNow = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+            double fps = 1000000.0/(timeNow - LastDrawTime).count();
+
+            if (0 == params.MaxFPS || fps < params.MaxFPS)
             {
-                const Particle & p = pm.P(i);
-                DrawParticle(view, pm, params, i);
-                if (params.DrawVelocities)
+                view.ClearWindow(params.BackgroundColor);
+
+                FPSValuesSum += fps;
+                ++FPSValuesCount;
+
+                if ((timeNow - LastFPSOutputTime).count() > 1000000.0 )
                 {
-                    DrawVelocity(view, pm, params, i);
+                    MeanFps = FPSValuesSum / FPSValuesCount;
+                    LastFPSOutputTime = timeNow;
+                    FPSValuesCount = 0;
+                    FPSValuesSum = 0;
                 }
+                view.DrawText(to_string(MeanFps).c_str(), params.UnchargedParticleColor, 0, 0);
+
+
+                for (int i = 0; i < pm.PCount(); i++)
+                {
+                    const Particle & p = pm.P(i);
+                    DrawParticle(view, pm, params, i);
+                    if (params.DrawVelocities)
+                    {
+                        DrawVelocity(view, pm, params, i);
+                    }
+                }
+                view.DrawScreen();
+                LastDrawTime = timeNow;
             }
-            view.DrawScreen();
         }
 
     private:
@@ -117,6 +140,11 @@ class ParticleDrawer
             view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
         }
 
+        microseconds LastDrawTime;
+        microseconds LastFPSOutputTime;
+        double MeanFps;
+        double FPSValuesSum;
+        double FPSValuesCount;
     };
 
 
@@ -465,7 +493,7 @@ void Particles::HandleKeyPress()
     }
     else if (click.leftclick)
     {
-        AddParticle(click.x*Params.Scale, click.y*Params.Scale, click.dx, click.dy);
+        AddParticle(click.x*Params.Scale, click.y*Params.Scale, click.dx*Params.Scale, click.dy*Params.Scale);
     }
 
     bool windowSizeChanged = UserInput.CheckSizeChanged();
@@ -487,7 +515,7 @@ void Particles::HandleKeyPress()
     if (check =='2') {Params.PhysConstants.ElectrostaticConstant *= 2; if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.00000000001;  cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;}
     if (check =='4') {Params.PhysConstants.MolecularBondingEnergy /= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
     if (check =='5') {Params.PhysConstants.MolecularBondingEnergy *= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
-    if (check =='i') {Params.DoInteraction = !Params.DoInteraction;  cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
+    if (check =='i') {Params.DoInteraction = !Params.DoInteraction; cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
     if (check =='v') {Params.DrawVelocities = !Params.DrawVelocities; cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
     if (check =='/') {
         for (int i = PManager->PCount() -  1; i >= 0; --i){
