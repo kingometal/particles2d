@@ -51,6 +51,11 @@ void ParticlesViewSdlAdapter::DrawLine(RGBData color, int x, int y, int dx, int 
     Presenter.StoreLine(x, y, dx, dy, color);
 }
 
+void ParticlesViewSdlAdapter::DrawText(const char *text, const RGBData &color, int x, int y)
+{
+    Presenter.StoreText(text, color, x, y);
+}
+
 void ParticlesViewSdlAdapter::DrawScreen()
 {
     Presenter.Present();

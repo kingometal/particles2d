@@ -13,6 +13,7 @@ public:
     void DrawParticle(int index, RGBData color, int x, int y);
     void DrawParticle(RGBData color, int x, int y);
     void DrawLine(RGBData color, int x, int y, int dx, int dy);
+    void DrawText(const char* text, const RGBData &color, int x, int y);
     void DrawScreen();
     int GetSideX();
     int GetSideY();
