@@ -4,6 +4,7 @@
 #include "interfaces/IParticlesView.h"
 #include "Vector.h"
 #include "Particle.h"
+#include "Physics.h"
 #include "Config.h"
 #include "interfaces/Rnd.h"
 #include <iostream>
@@ -12,140 +13,101 @@
 using namespace std;
 using namespace std::chrono;
 
-Vector GetGravity(const Particle& p1 , const Particle& p2, double reziprocalDistance, double G)
-{
-    double dx = p1.Position.Get(0) - p2.Position.Get(0);
-    double dy = p1.Position.Get(1) - p2.Position.Get(1);
-    double pot = - G * p1.Mass * p2.Mass * reziprocalDistance * reziprocalDistance * reziprocalDistance;
-    double fgx = pot * dx;
-    double fgy = pot * dy;
-    return Vector (fgx, fgy);
-}
-
-Vector GetElectromagneticForce(const Particle& p1 , const Particle& p2, double reziprocalDistance, double E, double M)
-{
-    double dx = p1.Position.Get(0) - p2.Position.Get(0);
-    double dy = p1.Position.Get(1) - p2.Position.Get(1);
-    double pot = p1.Charge * p2.Charge * reziprocalDistance * reziprocalDistance * reziprocalDistance;
-    double lorentz = p2.Velocity.Get(0) * dy - p2.Velocity.Get(1) * dx;
-    double fcx = pot * (E * dx + M * p1.Velocity.Get(1) * lorentz );
-    double fcy = pot * (E * dy - M * p1.Velocity.Get(0) * lorentz );
-    return Vector (fcx, fcy);
-}
-
-Vector GetLennardJonesForce(const Particle& p1 , const Particle& p2, double distance, double reziprocalDistance, double atomicRadius, double bondingEnergy)
-{
-    double fmx = 0.0;
-    double fmy = 0.0;
-    if (bondingEnergy != 0 && distance < atomicRadius * 10)
-    {
-        double dx = p1.Position.Get(0) - p2.Position.Get(0);
-        double dy = p1.Position.Get(1) - p2.Position.Get(1);
-        double arr = pow(atomicRadius * reziprocalDistance , 6);
-        double pot = bondingEnergy * (pow(arr, 2) - arr) * reziprocalDistance ;
-        fmx = pot * dx;
-        fmy = pot * dy;
-    }
-    return Vector (fmx, fmy);
-}
-
-Vector GetInterParticleForce(const Particle& p1 , const Particle& p2, const PhysicalConstants& Params)
-{
-    double dx = p1.Position.Get(0) - p2.Position.Get(0);
-    double dy = p1.Position.Get(1) - p2.Position.Get(1);
-    double distance = sqrt (dx * dx + dy * dy);
-    double reziR = 1.0 / distance;
-
-    // Gravity
-    Vector gravity = GetGravity(p1, p2, reziR, Params.GravitationalConstant);
-
-    // Coulomb and Lorentz
-    Vector electromagnetic = GetElectromagneticForce(p1, p2, reziR, Params.ElectrostaticConstant, Params.MagneticPermeability);
-
-    // Lennard-Jones Potential Force
-    Vector molecular = GetLennardJonesForce(p1, p2, distance, reziR, Params.AtomicRadius, Params.MolecularBondingEnergy);
-
-    Vector resultingForce = gravity + electromagnetic + molecular;
-
-    return resultingForce;
-}
-
 class ParticleDrawer
+{
+public:
+    ParticleDrawer() = default;
+    ~ParticleDrawer() = default;
+
+    void Draw(IParticlesView& view, const ParticleManager& pm, Config& params)
     {
-    public:
-        ParticleDrawer() = default;
-        ~ParticleDrawer() = default;
+        microseconds timeNow = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        double fps = 1000000.0/(timeNow - LastDrawTime).count();
 
-        void Draw(IParticlesView& view, const ParticleManager& pm, Config& params)
+        if (0 == params.MaxFPS || fps < params.MaxFPS)
         {
-            microseconds timeNow = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-            double fps = 1000000.0/(timeNow - LastDrawTime).count();
+            view.ClearWindow(params.BackgroundColor);
 
-            if (0 == params.MaxFPS || fps < params.MaxFPS)
+            FPSValuesSum += fps;
+            ++FPSValuesCount;
+
+            if ((timeNow - LastFPSOutputTime).count() > 1000000.0 )
             {
-                view.ClearWindow(params.BackgroundColor);
+                MeanFps = FPSValuesSum / FPSValuesCount;
+                LastFPSOutputTime = timeNow;
+                FPSValuesCount = 0;
+                FPSValuesSum = 0;
+                EKin = Physics::eKin(&pm, params);
+                EGrav = Physics::eG(&pm, params);
+                EEl = Physics::eEl(&pm, params);
+                EMol = Physics::eMol(&pm, params);
+                ESum = EKin + EGrav + EEl + EMol;
+            }
 
-                FPSValuesSum += fps;
-                ++FPSValuesCount;
+            view.DrawText(to_string(MeanFps).c_str(), params.UnchargedParticleColor, 0, 0);
+            if (params.ShowEnergies)
+            {
+                view.DrawText(to_string(EKin).c_str(), params.UnchargedParticleColor, 0, 24);
+                view.DrawText(to_string(EGrav).c_str(), params.UnchargedParticleColor, 0, 48);
+                view.DrawText(to_string(EEl).c_str(), params.UnchargedParticleColor, 0, 72);
+                view.DrawText(to_string(EMol).c_str(), params.UnchargedParticleColor, 0, 96);
+                view.DrawText(to_string(ESum).c_str(), params.UnchargedParticleColor, 0, 120);
+            }
 
-                if ((timeNow - LastFPSOutputTime).count() > 1000000.0 )
+
+            for (int i = 0; i < pm.PCount(); i++)
+            {
+                const Particle & p = pm.P(i);
+                DrawParticle(view, pm, params, i);
+                if (params.DrawVelocities)
                 {
-                    MeanFps = FPSValuesSum / FPSValuesCount;
-                    LastFPSOutputTime = timeNow;
-                    FPSValuesCount = 0;
-                    FPSValuesSum = 0;
+                    DrawVelocity(view, pm, params, i);
                 }
-                view.DrawText(to_string(MeanFps).c_str(), params.UnchargedParticleColor, 0, 0);
-
-
-                for (int i = 0; i < pm.PCount(); i++)
-                {
-                    const Particle & p = pm.P(i);
-                    DrawParticle(view, pm, params, i);
-                    if (params.DrawVelocities)
-                    {
-                        DrawVelocity(view, pm, params, i);
-                    }
-                }
-                view.DrawScreen();
-                LastDrawTime = timeNow;
             }
+            view.DrawScreen();
+            LastDrawTime = timeNow;
         }
+    }
 
-    private:
-        void DrawParticle(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+private:
+    void DrawParticle(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+    {
+        const Particle& p = pm.P(index);
+
+        int x = p.Position.X()/params.Scale;
+        int y = p.Position.Y()/params.Scale;
+        RGBData particleColor = params.UnchargedParticleColor;
+
+        if(p.Charge>0.0)
         {
-            const Particle& p = pm.P(index);
-
-            int x = p.Position.X()/params.Scale;
-            int y = p.Position.Y()/params.Scale;
-            RGBData particleColor = params.UnchargedParticleColor;
-
-            if(p.Charge>0.0)
-            {
-                particleColor = params.PositivelyChargedParticleColor;
-            }
-            else if (p.Charge<0.0)
-            {
-                particleColor = params.NegativeChargedParticleColor;
-            }
-            view.DrawParticle(index,particleColor, x,y);
+            particleColor = params.PositivelyChargedParticleColor;
         }
-
-        void DrawVelocity(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+        else if (p.Charge<0.0)
         {
-            const Particle& p = pm.P(index);
-            double rezScale = 1.0 / (double) params.Scale;
-            double factor = params.VelocityLengthFactor;
-            view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+            particleColor = params.NegativeChargedParticleColor;
         }
+        view.DrawParticle(index,particleColor, x,y);
+    }
 
-        microseconds LastDrawTime;
-        microseconds LastFPSOutputTime;
-        double MeanFps;
-        double FPSValuesSum;
-        double FPSValuesCount;
-    };
+    void DrawVelocity(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
+    {
+        const Particle& p = pm.P(index);
+        double rezScale = 1.0 / (double) params.Scale;
+        double factor = params.VelocityLengthFactor;
+        view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+    }
+
+    microseconds LastDrawTime;
+    microseconds LastFPSOutputTime;
+    double MeanFps;
+    double FPSValuesSum;
+    double FPSValuesCount;
+    double EKin;
+    double EGrav;
+    double EEl;
+    double EMol;
+    double ESum;
+};
 
 
 Particles::Particles(IParticlesView &window, IUserInput & userInput, Config &parameters):
@@ -166,17 +128,13 @@ Particles::~Particles()
 
 void Particles::ApplyForce(int n1, int n2)
 {
-    Vector force = GetInterParticleForce(PManager->P(n1), PManager->P(n2), Params.PhysConstants);
+    Vector force = Physics::GetInterParticleForce(PManager->P(n1), PManager->P(n2), Params.PhysConstants);
 
     if ((Params.RestrictInterParticleForce || Params.WriteInterParticleForceWarning) && force.Abs() > Params.MaxInterParticleForce)
     {
         if (Params.WriteInterParticleForceWarning)
         {
             cout << "force between particle " << n1 << " and " << n2 << " is " << force.Abs() ;
-//            cout << "; distance is " << distance ;
-//            cout << "; gravity is " << gravity.Abs() ;
-//            cout << "; electromagnetic force is " << electromagnetic.Abs() ;
-//            cout << "; molecular force is " << molecular.Abs() ;
             cout << endl;
         }
 
@@ -193,45 +151,6 @@ void Particles::ApplyForce(int n1, int n2)
     PManager->StoreForce(n1, n2, force);
     PManager->ResetNumSkippedForceCalculations(n1, n2);
 }
-
-//double Particles::eKin(){
-//    double En = 0.0;
-//    for (int n1 = 0; n1 < NumParticles; n1++){
-//        En += 0.5*ParticleN[n1].GetMass()*ParticleN[n1].GetSquaredVelocity();
-//    }
-//    return(En);
-//}
-
-//double Particles::eEl(){
-//    double En = 0.0;
-//    for (int n1 = 0; n1 < NumParticles; n1++){
-//        for(int n2=n1+1; n2<NumParticles; n2++){
-//            En+=ElectrostaticConstant*ParticleN[n1].GetCharge()*ParticleN[n2].GetCharge()/getR(n1,n2);
-//        }
-//    }
-//    return(En);
-//}
-
-//double Particles::eG(){
-//    double En = 0.0;
-//    for (int n1 = 0; n1 < NumParticles; n1++){
-//        for(int n2=n1+1; n2<NumParticles; n2++){
-//            En=GravitationalConstant*ParticleN[n1].GetMass()*ParticleN[n2].GetMass()/getR(n1,n2);
-//        }
-//    }
-//    return(En);
-//}
-
-//double Particles::eMol(){
-//    double En = 0.0;
-//    for (int n1 = 0; n1 < NumParticles; n1++){
-//        for(int n2=n1+1; n2<NumParticles; n2++){
-//            double r = getR(n1,n2);
-//            En-= 4*MolecularBondingEnergy * (pow(ATOMIC_RADIUS/r, 12) - pow(ATOMIC_RADIUS/r, 6)) ;
-//        }
-//    }
-//    return(En);
-//}
 
 void Particles::Draw() const
 {
@@ -258,7 +177,7 @@ void Particles::Init(void){
     int MidX = Params.BorderDimensions.Get(0)/2;
     int MidY = Params.BorderDimensions.Get(1)/2;
     for (int n = 0; n < Params.ParticleCount; n++){
-        Vector velocity (0,0); 
+        Vector velocity (0,0);
         Vector position (MidX, MidY);
         int positiveOrNegative = n%2 == 0 ? -1 : 1;
         double desiredParticleDistance = Params.InitialParticleDistance;
@@ -266,7 +185,7 @@ void Particles::Init(void){
         {
             double angle = 2.0 * M_PI / (double) Params.ParticleCount;
 
-            double calculatedDistanceFromCenterOfMass = desiredParticleDistance / angle;          
+            double calculatedDistanceFromCenterOfMass = desiredParticleDistance / angle;
             position.Set(MidX + calculatedDistanceFromCenterOfMass*sin(angle*n), MidY + calculatedDistanceFromCenterOfMass*cos(angle*n));
             double speedRange =  0.22;
             Vector relativePosition = position - Vector(MidX, MidY);
@@ -418,7 +337,7 @@ void Particles::AvoidCollisions()
             {
                 if (++retries > Params.ResolveCollisionsRetries)
                 {
-//                    cout << "timeout calculating collisions of " << n1 << endl;
+                    //                    cout << "timeout calculating collisions of " << n1 << endl;
                     success = false;
                     break;
                 }
@@ -517,6 +436,7 @@ void Particles::HandleKeyPress()
     if (check =='5') {Params.PhysConstants.MolecularBondingEnergy *= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
     if (check =='i') {Params.DoInteraction = !Params.DoInteraction; cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
     if (check =='v') {Params.DrawVelocities = !Params.DrawVelocities; cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
+    if (check =='e') {Params.ShowEnergies = !Params.ShowEnergies; cout << "Showing energies " << (Params.ShowEnergies?"enabled":"disabled") << endl;}
     if (check =='/') {
         for (int i = PManager->PCount() -  1; i >= 0; --i){
             PManager->ChangeRadius(i, -0.1);

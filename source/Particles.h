@@ -19,10 +19,6 @@ public:
     void Update();
     void Init();
 
-    double eEl();
-    double eKin();
-    double eMol();
-    double eG();
     void Sleep(clock_t wait);
 
 private:

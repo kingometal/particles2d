@@ -73,6 +73,7 @@ Config::Config(void)
     , VelocityColor (0, 0, 0, 255)
     , InitialPositioning(0)
     , InitialParticleDistance(30.0)
+    , ShowEnergies(false)
 {            
     config_t config;
     int tempColorR;

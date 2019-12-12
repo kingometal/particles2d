@@ -20,7 +20,6 @@ struct PhysicalConstants
     double ElectrostaticConstant;
     double MagneticPermeability;
     double MolecularBondingEnergy;
-    double AtomicForceConstant;
     double AtomicRadius;
 };
 
@@ -63,6 +62,8 @@ public:
 
     int InitialPositioning;
     double InitialParticleDistance;
+
+    bool ShowEnergies;
 };
 
 #endif // PARTICLES_PARAMETERS_H
