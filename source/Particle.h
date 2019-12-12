@@ -13,7 +13,6 @@ public:
     Vector Velocity;
 
     double Mass;
-    double ReciMass;
     double Charge;
     double Radius;
 };

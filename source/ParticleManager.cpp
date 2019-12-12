@@ -214,7 +214,7 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     Vector force = Impl->GetFullForce(index);
     for (int n = 0 ; n < 2 ;n++)
     {
-        acceleration = force.Get(n) * p.ReciMass;
+        acceleration = force.Get(n) / p.Mass;
         nextPossiblePosition = p.Position.Get(n) + p.Velocity.Get(n) + acceleration;
         if (nextPossiblePosition >= maxCoord.Get(n) || nextPossiblePosition < 0)
         {
