@@ -36,8 +36,10 @@ Vector GetLennardJonesForce(const Particle& p1 , const Particle& p2, double dist
     {
         double dx = p1.Position.Get(0) - p2.Position.Get(0);
         double dy = p1.Position.Get(1) - p2.Position.Get(1);
-        double arr = pow(atomicRadius * reziprocalDistance , 6);
-        double pot = bondingEnergy * (pow(arr, 2) - arr) * reziprocalDistance ;
+        double sigma6 = pow (atomicRadius, 6);
+        double rMinus13 = pow (reziprocalDistance, 13);
+        double rMinus7 = pow (reziprocalDistance, 7);
+        double pot = 4 * bondingEnergy * ( 12 * pow(sigma6, 2) * rMinus13 - 6 * sigma6 * rMinus7) * reziprocalDistance;
         fmx = pot * dx;
         fmy = pot * dy;
     }
@@ -68,8 +70,9 @@ Vector GetInterParticleForce(const Particle& p1 , const Particle& p2, const Phys
 double eKin(const ParticleManager* PManager, const Config & Params){
     double En = 0.0;
     for (int n1 = 0; n1 < PManager->PCount(); n1++){
-        En += 0.5*PManager->P(n1).Mass * pow(PManager->P(n1).Velocity.Abs(),2);
+        En += PManager->P(n1).Mass * pow(PManager->P(n1).Velocity.Abs(),2);
     }
+    En *= 0.5;
     return(En);
 }
 
@@ -88,10 +91,10 @@ double eG(const ParticleManager* PManager, const Config & Params){
     double En = 0.0;
     for (int n1 = 0; n1 < PManager->PCount(); n1++){
         for(int n2=n1+1; n2 < PManager->PCount(); n2++){
-            En=PManager->P(n1).Mass * PManager->P(n2).Mass / PManager->Distance(n1,n2);
+            En+=PManager->P(n1).Mass * PManager->P(n2).Mass / PManager->Distance(n1,n2);
         }
     }
-    En *= Params.PhysConstants.GravitationalConstant;
+    En *= - Params.PhysConstants.GravitationalConstant;
     return(En);
 }
 
@@ -100,7 +103,7 @@ double eMol(const ParticleManager* PManager, const Config & Params){
     for (int n1 = 0; n1 < PManager->PCount(); n1++){
         for(int n2=n1+1; n2 < PManager->PCount(); n2++){
             double r = PManager->Distance(n1,n2);
-            En-= pow(Params.PhysConstants.AtomicRadius/r, 12) - pow(Params.PhysConstants.AtomicRadius/r, 6) ;
+            En+= pow(Params.PhysConstants.AtomicRadius / r, 12) - pow(Params.PhysConstants.AtomicRadius / r, 6) ;
         }
     }
     En *= 4 * Params.PhysConstants.MolecularBondingEnergy;
