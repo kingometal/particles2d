@@ -2,113 +2,15 @@
 #include "ParticleManager.h"
 #include "interfaces/IUserInput.h"
 #include "interfaces/IParticlesView.h"
+#include "ParticleDrawer.h"
 #include "Vector.h"
 #include "Particle.h"
 #include "Physics.h"
 #include "Config.h"
 #include "interfaces/Rnd.h"
 #include <iostream>
-#include <chrono>
 
 using namespace std;
-using namespace std::chrono;
-
-class ParticleDrawer
-{
-public:
-    ParticleDrawer() = default;
-    ~ParticleDrawer() = default;
-
-    void Draw(IParticlesView& view, const ParticleManager& pm, Config& params)
-    {
-        microseconds timeNow = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        double fps = 1000000.0/(timeNow - LastDrawTime).count();
-
-        if (0 == params.MaxFPS || fps < params.MaxFPS)
-        {
-            view.ClearWindow(params.BackgroundColor);
-
-            FPSValuesSum += fps;
-            ++FPSValuesCount;
-
-            if ((timeNow - LastFPSOutputTime).count() > 1000000.0 )
-            {
-                MeanFps = FPSValuesSum / FPSValuesCount;
-                LastFPSOutputTime = timeNow;
-                FPSValuesCount = 0;
-                FPSValuesSum = 0;
-                EKin = Physics::eKin(&pm, params);
-                EGrav = Physics::eG(&pm, params);
-                EEl = Physics::eEl(&pm, params);
-                EMol = Physics::eMol(&pm, params);
-                ESum = EKin + EGrav + EEl + EMol;
-            }
-
-            view.DrawText(to_string(MeanFps).c_str(), params.UnchargedParticleColor, 0, 0);
-            if (params.ShowEnergies)
-            {
-                view.DrawText(to_string(EKin).c_str(), params.UnchargedParticleColor, 0, 24);
-                view.DrawText(to_string(EGrav).c_str(), params.UnchargedParticleColor, 0, 48);
-                view.DrawText(to_string(EEl).c_str(), params.UnchargedParticleColor, 0, 72);
-                view.DrawText(to_string(EMol).c_str(), params.UnchargedParticleColor, 0, 96);
-                view.DrawText(to_string(ESum).c_str(), params.UnchargedParticleColor, 0, 120);
-            }
-
-
-            for (int i = 0; i < pm.PCount(); i++)
-            {
-                const Particle & p = pm.P(i);
-                DrawParticle(view, pm, params, i);
-                if (params.DrawVelocities)
-                {
-                    DrawVelocity(view, pm, params, i);
-                }
-            }
-            view.DrawScreen();
-            LastDrawTime = timeNow;
-        }
-    }
-
-private:
-    void DrawParticle(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
-    {
-        const Particle& p = pm.P(index);
-
-        int x = p.Position.X()/params.Scale;
-        int y = p.Position.Y()/params.Scale;
-        RGBData particleColor = params.UnchargedParticleColor;
-
-        if(p.Charge>0.0)
-        {
-            particleColor = params.PositivelyChargedParticleColor;
-        }
-        else if (p.Charge<0.0)
-        {
-            particleColor = params.NegativeChargedParticleColor;
-        }
-        view.DrawParticle(index,particleColor, x,y);
-    }
-
-    void DrawVelocity(IParticlesView& view, const ParticleManager& pm, Config& params, int index) const
-    {
-        const Particle& p = pm.P(index);
-        double rezScale = 1.0 / (double) params.Scale;
-        double factor = params.VelocityLengthFactor;
-        view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
-    }
-
-    microseconds LastDrawTime;
-    microseconds LastFPSOutputTime;
-    double MeanFps;
-    double FPSValuesSum;
-    double FPSValuesCount;
-    double EKin;
-    double EGrav;
-    double EEl;
-    double EMol;
-    double ESum;
-};
-
 
 Particles::Particles(IParticlesView &window, IUserInput & userInput, Config &parameters):
     W(window),
@@ -189,7 +91,6 @@ void Particles::Init(void){
             position.Set(MidX + calculatedDistanceFromCenterOfMass*sin(angle*n), MidY + calculatedDistanceFromCenterOfMass*cos(angle*n));
             double speedRange =  0.22;
             Vector relativePosition = position - Vector(MidX, MidY);
-            cout.precision(17);
             
             if (Params.InitialPositioning == 1)
             {
@@ -204,6 +105,11 @@ void Particles::Init(void){
             position.Set(MidX + pow(n, 1.0/3.0)*desiredParticleDistance*sin(n), MidY + pow(n, 1.0/3.0)*desiredParticleDistance*cos(n));
             double speedRange =  0.01;
             velocity.Set(-0.5*speedRange+rnd(speedRange), - 0.5 * speedRange+rnd(speedRange));
+        }
+        else if (Params.InitialPositioning == 3)
+        {
+            position.Set(MidX + n * desiredParticleDistance, MidY);
+            velocity.Set(0, 0);
         }
 
         PManager->AddParticle(position, velocity, Params.DefaultParticleMass, positiveOrNegative * Params.DefaultParticleCharge, Params.DefaultParticleRadius);
@@ -375,19 +281,12 @@ void Particles::ResolveOverlapIfNeeded(int index1, int index2, double distance)
         double minimumAllowedDistance = p1.Radius + p2.Radius;
 
         double factor = minimumAllowedDistance / distance;
-        /*
-        p2.Position = p1.Position + ((p2.Position - p1.Position) * factor);
-        */
 
         Vector distanceV = p2.Position - p1.Position;
 
         double cm = (p2.Mass * distance)/(p2.Mass + p1.Mass);  //center of mass distance from particle ..
 
         Vector centerOfMassPosition = p1.Position + (distanceV * (cm/distance));
-
-
-        Vector OldPosition1 = p1.Position;
-        Vector OldPosition2 = p2.Position;
 
         PManager->SetPosition(index2, (p2.Position - centerOfMassPosition) * factor + centerOfMassPosition);
         PManager->SetPosition(index1, (p1.Position - centerOfMassPosition) * factor + centerOfMassPosition);

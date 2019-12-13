@@ -26,13 +26,13 @@ directories: $(OUTDIR)
 $(OUTDIR):
 	mkdir -p $(OUTDIR)
 
-${EXECUTABLE}: directories $(OUTDIR)/particles.o $(OUTDIR)/particle.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a $(OUTDIR)/config.o $(OUTDIR)/physics.o
-	$(GCC) -Wall $(OUTDIR)/particle.o $(OUTDIR)/particles.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/physics.o $(OUTDIR)/config.o -o $(EXECUTABLE) $$(pkg-config --libs x11) -l$(SDL_LIBRARY) -L$(OUTDIR)/$(LIBDIR) $(FLAGS)
+${EXECUTABLE}: directories $(OUTDIR)/particles.o $(OUTDIR)/particle.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/$(LIBDIR)/lib$(SDL_LIBRARY).a $(OUTDIR)/config.o $(OUTDIR)/physics.o $(OUTDIR)/particledrawer.o
+	$(GCC) -Wall $(OUTDIR)/particle.o $(OUTDIR)/particles.o $(OUTDIR)/main.o $(OUTDIR)/particlesviewsdladapter.o $(OUTDIR)/particlemanager.o $(OUTDIR)/particledrawer.o $(OUTDIR)/physics.o $(OUTDIR)/config.o -o $(EXECUTABLE) $$(pkg-config --libs x11) -l$(SDL_LIBRARY) -L$(OUTDIR)/$(LIBDIR) $(FLAGS)
 
 $(OUTDIR)/main.o: $(SOURCEDIR)/main.cpp
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/main.cpp -o $(OUTDIR)/main.o
 
-$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/IParticlesView.h $(OUTDIR)/particle.o $(OUTDIR)/config.o $(OUTDIR)/particlemanager.o $(SOURCEDIR)/$(INTERFACEFOLDER)/IUserInput.h
+$(OUTDIR)/particles.o: $(SOURCEDIR)/Particles.h $(SOURCEDIR)/Particles.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/IParticlesView.h $(OUTDIR)/particle.o $(OUTDIR)/config.o $(OUTDIR)/particlemanager.o $(OUTDIR)/particledrawer.o $(SOURCEDIR)/$(INTERFACEFOLDER)/IUserInput.h
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Particles.cpp -o $(OUTDIR)/particles.o
 
 $(OUTDIR)/particlemanager.o: $(SOURCEDIR)/ParticleManager.h $(SOURCEDIR)/ParticleManager.cpp $(OUTDIR)/particle.o
@@ -49,6 +49,9 @@ $(OUTDIR)/config.o: $(SOURCEDIR)/Config.h $(SOURCEDIR)/Config.cpp $(OUTDIR)/rgbd
 
 $(OUTDIR)/physics.o: $(SOURCEDIR)/Physics.h $(SOURCEDIR)/Physics.cpp $(SOURCEDIR)/Vector.h
 	$(GCC) $(FLAGS) -c $(SOURCEDIR)/Physics.cpp -o $(OUTDIR)/physics.o
+
+$(OUTDIR)/particledrawer.o: $(SOURCEDIR)/ParticleDrawer.h $(SOURCEDIR)/ParticleDrawer.cpp
+	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticleDrawer.cpp -o $(OUTDIR)/particledrawer.o
 
 # $(OUTDIR)/particlesview.o: $(SOURCEDIR)/ParticlesView.h $(SOURCEDIR)/ParticlesView.cpp $(SOURCEDIR)/$(INTERFACEFOLDER)/ParticlesViewInterface.h $(OUTDIR)/rgbdata.o $(OUTDIR)/xwindows.o
 #	$(GCC) $(FLAGS) -c $(SOURCEDIR)/ParticlesView.cpp -o $(OUTDIR)/particlesview.o
