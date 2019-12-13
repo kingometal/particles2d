@@ -15,17 +15,21 @@ int main(void)
     }
     IParticlesView* view = new ParticlesViewSdlAdapter(*presenter);
     UserInput* userInput = new UserInput();
-    Particles Ps(*view, *userInput, *parameters);
-    Ps.Init();
+    Particles* simulation = new Particles(*view, *userInput, *parameters);
+
+    simulation->Init();
     do
     {
-        Ps.Update();
+        simulation->Update();
     }
     while (! userInput->IsQuitRequested());
 
+    delete simulation;
+    delete userInput;
     delete view;
     delete presenter;
-    delete userInput;
+    delete parameters;
+
     return 0;
 }
 
