@@ -3,7 +3,7 @@
 
 class IModel
 {
-  public:
+public:
     virtual void Iterate() = 0;
 };
 #endif // IMODEL_H

@@ -43,7 +43,7 @@ public:
     {
         v[0] = x;
         v[1] = y;
-   }
+    }
 
     inline Vector operator+(const Vector& v2) const
     {

@@ -179,7 +179,7 @@ void Presenter::StoreRectangle(int x, int y, int dx, int dy, const RGBData &data
 void Presenter::Present()
 {
     SDL_RenderPresent(Pimpl->Renderer);
-       
+
 }
 
 bool Presenter::Init(int width, int height)

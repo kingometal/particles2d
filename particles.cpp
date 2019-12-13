@@ -42,7 +42,7 @@ Particles::~Particles()
 //}
 
 
-double Particles::oneDcollision(double v, double v2, double m, double m2){
+double Particles::oneDcollision(double v, double v2, double m, double m2) {
     return (2.0 * m2 * v2   + (m - m2)* v) / (m + m2);
 }
 
@@ -57,20 +57,20 @@ double Particles::oneDcollision(double v, double v2, double m, double m2){
 //}
 
 double Particles::getR (int n1, int n2)
-{ //Abstand zwischen Partikeln bestimmen
+{   //Abstand zwischen Partikeln bestimmen
     return sqrt( (p[n2].getX()-p[n1].getX())*(p[n2].getX()-p[n1].getX())+(p[n2].getY()-p[n1].getY())*(p[n2].getY()-p[n1].getY())   )   ;
 }
 
-bool Particles::checkOverlap(int n1, int n2, double distance){
+bool Particles::checkOverlap(int n1, int n2, double distance) {
     return distance < p[n1].getR()+p[n2].getR();
 }
 
-bool Particles::checkCollision(int n1, int n2){
-    return sqrt(pow( (p[n2].getX()+p[n2].getVx()) - (p[n1].getX()+p[n1].getVx()) , 2.0 ) + pow( (p[n2].getY()+p[n2].getVy())-(p[n1].getY()+p[n1].getVy()) ,2.0)) < p[n1].getR()+p[n2].getR();
+bool Particles::checkCollision(int n1, int n2) {
+    return sqrt(pow( (p[n2].getX()+p[n2].getVx()) - (p[n1].getX()+p[n1].getVx()), 2.0 ) + pow( (p[n2].getY()+p[n2].getVy())-(p[n1].getY()+p[n1].getVy()),2.0)) < p[n1].getR()+p[n2].getR();
 }
 
-void Particles::overlap(int n1, int n2, double r){
-    if (checkOverlap(n1, n2, r)){
+void Particles::overlap(int n1, int n2, double r) {
+    if (checkOverlap(n1, n2, r)) {
         cout << "overlap" << endl;
 
         double x1 = p[n1].getX();
@@ -86,14 +86,14 @@ void Particles::overlap(int n1, int n2, double r){
 
         double R = p[n1].getR() + p[n2].getR();
         double quot = R/r;
-		p[n2].setX((x2-cmx)*quot + cmx,
-				   (y2-cmy)*quot + cmy);
-		p[n1].setX((x1-cmx)*quot + cmx,
-				   (y1-cmy)*quot + cmy);
+        p[n2].setX((x2-cmx)*quot + cmx,
+                   (y2-cmy)*quot + cmy);
+        p[n1].setX((x1-cmx)*quot + cmx,
+                   (y1-cmy)*quot + cmy);
     }
 }
 
-void Particles::collision (int n1, int n2){
+void Particles::collision (int n1, int n2) {
 
     double tanr = (p[n1].getY()-p[n2].getY())/(p[n1].getX() - p[n2].getX());
     double cosr = 1/sqrt(tanr*tanr + 1.0);
@@ -125,7 +125,7 @@ void Particles::collision (int n1, int n2){
     p[n2].setV(vGedrehtx2, vGedrehty2);
 }
 
-void Particles::force(int n1, int n2, double r){
+void Particles::force(int n1, int n2, double r) {
     double fgx=0.0, fgy=0.0, fcx = 0.0, fcy = 0.0, fmx = 0.0, fmy = 0.0;
 
     double reziR3 = 1/(r*r*r);
@@ -173,38 +173,38 @@ void Particles::force(int n1, int n2, double r){
     p[n2].decG( fgx+fcx+fmx,fgy+fcy+fmy);
 }
 
-double Particles::eKin(){
+double Particles::eKin() {
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
+    for (int n1 = 0; n1 < N; n1++) {
         En += 0.5*p[n1].getM()*p[n1].getV2();
     }
     return(En);
 }
 
-double Particles::eEl(){
+double Particles::eEl() {
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
+    for (int n1 = 0; n1 < N; n1++) {
+        for(int n2=n1+1; n2<N; n2++) {
             En+=E*p[n1].getQ()*p[n2].getQ()/getR(n1,n2);
         }
     }
     return(En);
 }
 
-double Particles::eG(){
+double Particles::eG() {
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
+    for (int n1 = 0; n1 < N; n1++) {
+        for(int n2=n1+1; n2<N; n2++) {
             En=G*p[n1].getM()*p[n2].getM()/getR(n1,n2);
         }
     }
     return(En);
 }
 
-double Particles::eMol(){
+double Particles::eMol() {
     double En = 0.0;
-    for (int n1 = 0; n1 < N; n1++){
-        for(int n2=n1+1; n2<N; n2++){
+    for (int n1 = 0; n1 < N; n1++) {
+        for(int n2=n1+1; n2<N; n2++) {
             double r = getR(n1,n2);
             En-= 4*Mol * (pow(ATOMIC_RADIUS/r, 12) - pow(ATOMIC_RADIUS/r, 6)) ;
         }
@@ -240,13 +240,13 @@ void Particles::redraw(int index)
     redraw(index, p[index].getPrevX(), p[index].getPrevY(), p[index].getX(), p[index].getY(), p[index].getQ());
 }
 
-void Particles::redrawV(){
+void Particles::redrawV() {
 //    W.Black();
 //    W.DrawLine (x, y, x+vx*100, y+vy*100);
 }
 
 
-void Particles::redrawV(int color){
+void Particles::redrawV(int color) {
 //    W.Black();
 //    if (color ==0) W.White();
 //    W.DrawLine (x, y, x+vx*100, y+vy*100);
@@ -255,17 +255,17 @@ void Particles::redrawV(int color){
 
 
 
-void Particles::sleeps( clock_t wait ){
+void Particles::sleeps( clock_t wait ) {
     clock_t goal;
     goal = wait + clock();
     while( goal > clock() );
 }
 
-void Particles::init(void){
+void Particles::init(void) {
     InitRandom();
     double R =  RADIUS;
     int Mid = L/2;
-    for (int n = 0; n<N; n++){
+    for (int n = 0; n<N; n++) {
         int pot = n%2 == 0 ? -1 : 1;
         //while (R<=1) R = rnd(5);
         double distance = 30.0;
@@ -284,7 +284,7 @@ void Particles::init(void){
 }
 
 
-bool Particles::update(){
+bool Particles::update() {
     for (int n1=0; n1<N; n1++)
     {
         p[n1].setG(0.0, 0.0);
@@ -330,16 +330,40 @@ bool Particles::update(){
     {
         cout << check << endl;
     }
-    if (check =='-') {G /= 2; if (G < 0.000000000001) G = 0.0;  cout << "G =" << G << endl;}
-    if (check =='+') {G *= 2; if (G < 0.000000000001) G = 0.00000000001;  cout << "G =" << G << endl;}
-    if (check =='1') {E /= 2; if (E < 0.000000000001) E = 0.0;  cout << "E =" << E << endl;}
-    if (check =='2') {E *= 2; if (E < 0.000000000001) E = 0.00000000001;  cout << "E =" << E << endl;}
-    if (check =='4') {Mol /= 2; if (Mol < 0.000000000001) Mol = 0.0;  cout << "Mol =" << Mol << endl;}
-    if (check =='5') {Mol *= 2; if (Mol < 0.000000000001) Mol = 0.00000000001;  cout << "Mol =" << Mol << endl;}
+    if (check =='-') {
+        G /= 2;
+        if (G < 0.000000000001) G = 0.0;
+        cout << "G =" << G << endl;
+    }
+    if (check =='+') {
+        G *= 2;
+        if (G < 0.000000000001) G = 0.00000000001;
+        cout << "G =" << G << endl;
+    }
+    if (check =='1') {
+        E /= 2;
+        if (E < 0.000000000001) E = 0.0;
+        cout << "E =" << E << endl;
+    }
+    if (check =='2') {
+        E *= 2;
+        if (E < 0.000000000001) E = 0.00000000001;
+        cout << "E =" << E << endl;
+    }
+    if (check =='4') {
+        Mol /= 2;
+        if (Mol < 0.000000000001) Mol = 0.0;
+        cout << "Mol =" << Mol << endl;
+    }
+    if (check =='5') {
+        Mol *= 2;
+        if (Mol < 0.000000000001) Mol = 0.00000000001;
+        cout << "Mol =" << Mol << endl;
+    }
 
     if (check =='/') {
-        for (int i = 0; i < N; i++){
-            if (p[i].getR()>0.1){
+        for (int i = 0; i < N; i++) {
+            if (p[i].getR()>0.1) {
                 p[i].setR(p[i].getR()-0.1);
             }
 
@@ -347,16 +371,18 @@ bool Particles::update(){
         cout << "radius reduced by 0.1; it is now " << p[0].getR() << endl;
     }
     if (check =='*') {
-        for (int i = 0; i < N; i++){
+        for (int i = 0; i < N; i++) {
             p[i].setR(p[i].getR()+0.1);
 
         }
         cout << "radius increased by 0.1; it is now " << p[0].getR() << endl;
     }
-    if (check =='q') {return false;}
+    if (check =='q') {
+        return false;
+    }
 
 
-    for(int n1=0; n1<N;n1++){
+    for(int n1=0; n1<N; n1++) {
         p[n1].stepX();
         redraw(n1);
         p[n1].setPrev();

@@ -4,44 +4,44 @@
 
 namespace
 {
-    void GetConfigDouble(const config_t& config, const char* key, double& target)
+void GetConfigDouble(const config_t& config, const char* key, double& target)
+{
+    if (!config_lookup_float(&config, key, &target))
     {
-        if (!config_lookup_float(&config, key, &target))
-        {
-            std::cout << "failed to get key " << key << "; using default value: " << target << std::endl;
-        }
-        else
-        {
-            std::cout << "loaded from config: " << key << " : " << target << std::endl;
-        }
+        std::cout << "failed to get key " << key << "; using default value: " << target << std::endl;
     }
+    else
+    {
+        std::cout << "loaded from config: " << key << " : " << target << std::endl;
+    }
+}
 
-    void GetConfigInt(const config_t& config, const char* key, int& target)
+void GetConfigInt(const config_t& config, const char* key, int& target)
+{
+    if (!config_lookup_int(&config, key, &target))
     {
-        if (!config_lookup_int(&config, key, &target))
-        {
-            std::cout << "failed to get key " << key << "; using default value: " << target  << std::endl;
-        }
-        else
-        {
-            std::cout << "loaded from config: " << key << " : " << target  << std::endl;
-        }
+        std::cout << "failed to get key " << key << "; using default value: " << target  << std::endl;
     }
+    else
+    {
+        std::cout << "loaded from config: " << key << " : " << target  << std::endl;
+    }
+}
 
-    void GetConfigBool(const config_t& config, const char* key, bool& target)
+void GetConfigBool(const config_t& config, const char* key, bool& target)
+{
+    int temp;
+    if (!config_lookup_bool(&config, key, &temp))
     {
-        int temp;
-        if (!config_lookup_bool(&config, key, &temp))
-        {
-            std::cout << "failed to get key " << key << "; using default value: " << target  << std::endl;
-            target = temp;
-        }
-        else
-        {
-            target = temp;
-            std::cout << "loaded from config: " << key << " : " << target  << std::endl;
-        }
+        std::cout << "failed to get key " << key << "; using default value: " << target  << std::endl;
+        target = temp;
     }
+    else
+    {
+        target = temp;
+        std::cout << "loaded from config: " << key << " : " << target  << std::endl;
+    }
+}
 }
 
 Config::Config(void)
@@ -74,7 +74,7 @@ Config::Config(void)
     , InitialPositioning(0)
     , InitialParticleDistance(30.0)
     , ShowEnergies(false)
-{            
+{
     config_t config;
     int tempColorR;
     int tempColorG;

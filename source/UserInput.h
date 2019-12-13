@@ -6,6 +6,8 @@ class UserInput: public IUserInput
 {
 public:
     UserInput();
+    ~UserInput() = default;
+
     bool IsQuitRequested();
     char CheckKeyPress();
     MouseClick CheckMouseClick();

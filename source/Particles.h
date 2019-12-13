@@ -3,16 +3,13 @@
 
 #include <ctime>
 
-class Particle;
 class IParticlesView;
 class IUserInput;
 class ParticleManager;
 class Config;
-class Vector;
-class RGBData;
 class ParticleDrawer;
 
-class Particles{
+class Particles {
 public:
     Particles(IParticlesView &window, IUserInput& userInput, Config& parameters);
     ~Particles();

@@ -16,6 +16,8 @@ struct PhysicalConstants
 
     }
 
+    ~PhysicalConstants() = default;
+
     double GravitationalConstant;
     double ElectrostaticConstant;
     double MagneticPermeability;
@@ -27,6 +29,7 @@ class Config
 {
 public:
     Config(void);
+    ~Config() = default;
 
     int WindowSideSizeX;
     int WindowSideSizeY;
@@ -38,8 +41,8 @@ public:
     double DefaultParticleCharge;
     int Scale;
 
-   bool CheckCollisions;
-   int ResolveCollisionsRetries;
+    bool CheckCollisions;
+    int ResolveCollisionsRetries;
 
     Vector BorderDimensions;
     bool DoInteraction;

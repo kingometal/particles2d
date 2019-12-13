@@ -7,7 +7,7 @@
 
 namespace Physics
 {
-Vector GetGravity(const Particle& p1 , const Particle& p2, double reziprocalDistance, double G)
+Vector GetGravity(const Particle& p1, const Particle& p2, double reziprocalDistance, double G)
 {
     double dx = p1.Position.Get(0) - p2.Position.Get(0);
     double dy = p1.Position.Get(1) - p2.Position.Get(1);
@@ -17,7 +17,7 @@ Vector GetGravity(const Particle& p1 , const Particle& p2, double reziprocalDist
     return Vector (fgx, fgy);
 }
 
-Vector GetElectromagneticForce(const Particle& p1 , const Particle& p2, double reziprocalDistance, double E, double M)
+Vector GetElectromagneticForce(const Particle& p1, const Particle& p2, double reziprocalDistance, double E, double M)
 {
     double dx = p1.Position.Get(0) - p2.Position.Get(0);
     double dy = p1.Position.Get(1) - p2.Position.Get(1);
@@ -28,7 +28,7 @@ Vector GetElectromagneticForce(const Particle& p1 , const Particle& p2, double r
     return Vector (fcx, fcy);
 }
 
-Vector GetLennardJonesForce(const Particle& p1 , const Particle& p2, double distance, double reziprocalDistance, double atomicRadius, double bondingEnergy)
+Vector GetLennardJonesForce(const Particle& p1, const Particle& p2, double distance, double reziprocalDistance, double atomicRadius, double bondingEnergy)
 {
     double fmx = 0.0;
     double fmy = 0.0;
@@ -46,7 +46,7 @@ Vector GetLennardJonesForce(const Particle& p1 , const Particle& p2, double dist
     return Vector (fmx, fmy);
 }
 
-Vector GetInterParticleForce(const Particle& p1 , const Particle& p2, const PhysicalConstants& Params)
+Vector GetInterParticleForce(const Particle& p1, const Particle& p2, const PhysicalConstants& Params)
 {
     double dx = p1.Position.Get(0) - p2.Position.Get(0);
     double dy = p1.Position.Get(1) - p2.Position.Get(1);
@@ -67,19 +67,19 @@ Vector GetInterParticleForce(const Particle& p1 , const Particle& p2, const Phys
     return resultingForce;
 }
 
-double eKin(const ParticleManager* PManager, const Config & Params){
+double eKin(const ParticleManager* PManager, const Config & Params) {
     double En = 0.0;
-    for (int n1 = 0; n1 < PManager->PCount(); n1++){
+    for (int n1 = 0; n1 < PManager->PCount(); n1++) {
         En += PManager->P(n1).Mass * pow(PManager->P(n1).Velocity.Abs(),2);
     }
     En *= 0.5;
     return(En);
 }
 
-double eEl(const ParticleManager* PManager, const Config & Params){
+double eEl(const ParticleManager* PManager, const Config & Params) {
     double En = 0.0;
-    for (int n1 = 0; n1 < PManager->PCount(); n1++){
-        for(int n2=n1+1; n2 < PManager->PCount(); n2++){
+    for (int n1 = 0; n1 < PManager->PCount(); n1++) {
+        for(int n2=n1+1; n2 < PManager->PCount(); n2++) {
             En+=PManager->P(n1).Charge * PManager->P(n2).Charge / PManager->Distance(n1,n2);
         }
     }
@@ -87,10 +87,10 @@ double eEl(const ParticleManager* PManager, const Config & Params){
     return(En);
 }
 
-double eG(const ParticleManager* PManager, const Config & Params){
+double eG(const ParticleManager* PManager, const Config & Params) {
     double En = 0.0;
-    for (int n1 = 0; n1 < PManager->PCount(); n1++){
-        for(int n2=n1+1; n2 < PManager->PCount(); n2++){
+    for (int n1 = 0; n1 < PManager->PCount(); n1++) {
+        for(int n2=n1+1; n2 < PManager->PCount(); n2++) {
             En+=PManager->P(n1).Mass * PManager->P(n2).Mass / PManager->Distance(n1,n2);
         }
     }
@@ -98,10 +98,10 @@ double eG(const ParticleManager* PManager, const Config & Params){
     return(En);
 }
 
-double eMol(const ParticleManager* PManager, const Config & Params){
+double eMol(const ParticleManager* PManager, const Config & Params) {
     double En = 0.0;
-    for (int n1 = 0; n1 < PManager->PCount(); n1++){
-        for(int n2=n1+1; n2 < PManager->PCount(); n2++){
+    for (int n1 = 0; n1 < PManager->PCount(); n1++) {
+        for(int n2=n1+1; n2 < PManager->PCount(); n2++) {
             double r = PManager->Distance(n1,n2);
             En+= pow(Params.PhysConstants.AtomicRadius / r, 12) - pow(Params.PhysConstants.AtomicRadius / r, 6) ;
         }

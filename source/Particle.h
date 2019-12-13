@@ -2,12 +2,12 @@
 #define PARTICLE_H
 
 #include "Vector.h"
-#include <map>
 
 class Particle
 {
 public:
     Particle();
+    ~Particle() = default;
 
     Vector Position;
     Vector Velocity;

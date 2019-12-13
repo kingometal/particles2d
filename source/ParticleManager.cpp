@@ -96,7 +96,7 @@ public:
     {
         if (delta < 0)
         {
-            if (ParticleN[index].Radius > - delta){
+            if (ParticleN[index].Radius > - delta) {
                 ParticleN[index].Radius += delta;
             }
         }
@@ -107,7 +107,7 @@ public:
     }
 
     inline double OneDcollision(double v, double v2, double m, double m2) const
-    { // returns final velocity of the particle 1 after collision with particle 2
+    {   // returns final velocity of the particle 1 after collision with particle 2
         return (2.0 * m2 * v2   + (m - m2)* v) / (m + m2);
     }
 
@@ -212,7 +212,7 @@ void ParticleManager::UpdateVelocity(const int index, const Vector &maxCoord, co
     double nextPossiblePosition;
     Particle & p = Impl->ParticleN[index];
     Vector force = Impl->GetFullForce(index);
-    for (int n = 0 ; n < 2 ;n++)
+    for (int n = 0 ; n < 2 ; n++)
     {
         acceleration = force.Get(n) / p.Mass;
         nextPossiblePosition = p.Position.Get(n) + p.Velocity.Get(n) + acceleration;
@@ -259,7 +259,7 @@ double ParticleManager::Distance(int index1, int index2) const
     return (Impl->ParticleN[index2].Position - Impl->ParticleN[index1].Position).Abs();
 }
 
-void ParticleManager::PerformCollision (int index1, int index2){
+void ParticleManager::PerformCollision (int index1, int index2) {
 
     Impl->PerformCollision (index1, index2);
 }

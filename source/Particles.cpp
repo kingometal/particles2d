@@ -59,7 +59,7 @@ void Particles::Draw() const
     Drawer->Draw(W, *PManager, Params);
 }
 
-void Particles::Sleep( clock_t wait ){
+void Particles::Sleep( clock_t wait ) {
     clock_t goal;
     goal = wait + clock();
     while( goal > clock() );
@@ -74,11 +74,11 @@ void Particles::ReInit(void)
     Init();
 }
 
-void Particles::Init(void){
+void Particles::Init(void) {
     InitRandom();
     int MidX = Params.BorderDimensions.Get(0)/2;
     int MidY = Params.BorderDimensions.Get(1)/2;
-    for (int n = 0; n < Params.ParticleCount; n++){
+    for (int n = 0; n < Params.ParticleCount; n++) {
         Vector velocity (0,0);
         Vector position (MidX, MidY);
         int positiveOrNegative = n%2 == 0 ? -1 : 1;
@@ -91,12 +91,12 @@ void Particles::Init(void){
             position.Set(MidX + calculatedDistanceFromCenterOfMass*sin(angle*n), MidY + calculatedDistanceFromCenterOfMass*cos(angle*n));
             double speedRange =  0.22;
             Vector relativePosition = position - Vector(MidX, MidY);
-            
+
             if (Params.InitialPositioning == 1)
             {
                 if (relativePosition.Abs() > 0)
                 {
-                    velocity.Set(relativePosition.Y()/relativePosition.Abs()*speedRange , -relativePosition.X()/relativePosition.Abs()*speedRange);
+                    velocity.Set(relativePosition.Y()/relativePosition.Abs()*speedRange, -relativePosition.X()/relativePosition.Abs()*speedRange);
                 }
             }
         }
@@ -119,7 +119,7 @@ void Particles::Init(void){
 
     if (Params.DoInteraction)
     {
-        for (int n = 0; n < Params.ParticleCount; n++){
+        for (int n = 0; n < Params.ParticleCount; n++) {
             for (int n2 = 0; n2 < n; ++n2)
             {
                 ApplyForce(n,n2);
@@ -170,7 +170,7 @@ bool Particles::RemoveParticle(int x, int y)
     return removed;
 }
 
-void Particles::Update(){
+void Particles::Update() {
     HandleKeyPress();
 
     if (Params.CheckCollisions && Params.DoInteraction)
@@ -224,7 +224,7 @@ void Particles::UpdateParticlesForcesAndVelocities()
 
 void Particles::UpdateParticlesPositions()
 {
-    for(int n1 = PManager->PCount() - 1; n1 >= 0; --n1){
+    for(int n1 = PManager->PCount() - 1; n1 >= 0; --n1) {
         PManager->UpdatePosition(n1);
     }
 }
@@ -275,7 +275,7 @@ bool Particles::CheckOverlap(const int index1, const int index2, const double di
 
 void Particles::ResolveOverlapIfNeeded(int index1, int index2, double distance)
 {
-    if (CheckOverlap(index1, index2, distance)){
+    if (CheckOverlap(index1, index2, distance)) {
         const Particle& p1 = PManager->P(index1);
         const Particle& p2 = PManager->P(index2);
         double minimumAllowedDistance = p1.Radius + p2.Radius;
@@ -325,25 +325,64 @@ void Particles::HandleKeyPress()
     {
         cout << check << endl;
     }
-    if (check =='r') {ReInit();  cout << "Reset" << endl;}
-    if (check =='a') {RemoveParticle(PManager->P(PManager->PCount() - 1).Position.Get(0), PManager->P(PManager->PCount() - 1).Position.Get(1)); cout << "Remove particle" << endl;}
-    if (check =='-') {Params.PhysConstants.GravitationalConstant /= 2; if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.0;  cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;}
-    if (check =='+') {Params.PhysConstants.GravitationalConstant *= 2; if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.00000000001;  cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;}
-    if (check =='1') {Params.PhysConstants.ElectrostaticConstant /= 2; if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.0;  cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;}
-    if (check =='2') {Params.PhysConstants.ElectrostaticConstant *= 2; if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.00000000001;  cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;}
-    if (check =='4') {Params.PhysConstants.MolecularBondingEnergy /= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.0;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
-    if (check =='5') {Params.PhysConstants.MolecularBondingEnergy *= 2; if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.00000000001;  cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;}
-    if (check =='i') {Params.DoInteraction = !Params.DoInteraction; cout << "Particle Interaction set to " << Params.DoInteraction << endl;}
-    if (check =='v') {Params.DrawVelocities = !Params.DrawVelocities; cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;}
-    if (check =='e') {Params.ShowEnergies = !Params.ShowEnergies; cout << "Showing energies " << (Params.ShowEnergies?"enabled":"disabled") << endl;}
+    if (check =='r') {
+        ReInit();
+        cout << "Reset" << endl;
+    }
+    if (check =='a') {
+        RemoveParticle(PManager->P(PManager->PCount() - 1).Position.Get(0), PManager->P(PManager->PCount() - 1).Position.Get(1));
+        cout << "Remove particle" << endl;
+    }
+    if (check =='-') {
+        Params.PhysConstants.GravitationalConstant /= 2;
+        if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.0;
+        cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;
+    }
+    if (check =='+') {
+        Params.PhysConstants.GravitationalConstant *= 2;
+        if (Params.PhysConstants.GravitationalConstant < 0.000000000001) Params.PhysConstants.GravitationalConstant = 0.00000000001;
+        cout << "G =" << Params.PhysConstants.GravitationalConstant << endl;
+    }
+    if (check =='1') {
+        Params.PhysConstants.ElectrostaticConstant /= 2;
+        if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.0;
+        cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;
+    }
+    if (check =='2') {
+        Params.PhysConstants.ElectrostaticConstant *= 2;
+        if (Params.PhysConstants.ElectrostaticConstant < 0.000000000001) Params.PhysConstants.ElectrostaticConstant = 0.00000000001;
+        cout << "E =" << Params.PhysConstants.ElectrostaticConstant << endl;
+    }
+    if (check =='4') {
+        Params.PhysConstants.MolecularBondingEnergy /= 2;
+        if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.0;
+        cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;
+    }
+    if (check =='5') {
+        Params.PhysConstants.MolecularBondingEnergy *= 2;
+        if (Params.PhysConstants.MolecularBondingEnergy < 0.000000000001) Params.PhysConstants.MolecularBondingEnergy = 0.00000000001;
+        cout << "Mol =" << Params.PhysConstants.MolecularBondingEnergy << endl;
+    }
+    if (check =='i') {
+        Params.DoInteraction = !Params.DoInteraction;
+        cout << "Particle Interaction set to " << Params.DoInteraction << endl;
+    }
+    if (check =='v') {
+        Params.DrawVelocities = !Params.DrawVelocities;
+        cout << "Velocity drawing " << (Params.DrawVelocities?"enabled":"disabled") << endl;
+    }
+    if (check =='e') {
+        Params.ShowEnergies = !Params.ShowEnergies;
+        cout << "Showing energies " << (Params.ShowEnergies?"enabled":"disabled") << endl;
+    }
     if (check =='/') {
-        for (int i = PManager->PCount() -  1; i >= 0; --i){
+        for (int i = PManager->PCount() -  1; i >= 0; --i) {
             PManager->ChangeRadius(i, -0.1);
         }
         cout << "radius reduced by 0.1; it is now " << PManager->P(0).Radius << endl;
     }
     if (check =='*') {
-        for (int i = PManager->PCount() -  1; i >= 0; --i){
+        for (int i = PManager->PCount() -  1; i >= 0; --i) {
             PManager->ChangeRadius(i, 0.1);
         }
         cout << "radius increased by 0.1; it is now " << PManager->P(0).Radius << endl;
@@ -370,4 +409,3 @@ void Particles::UpdateBorderDimensions()
 {
     Params.BorderDimensions.Set(W.GetSideX()* Params.Scale, W.GetSideY()*Params.Scale);
 }
-

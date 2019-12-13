@@ -93,5 +93,5 @@ void ParticleDrawer::DrawVelocity(IParticlesView& view, const ParticleManager& p
     const Particle& p = pm.P(index);
     double rezScale = 1.0 / (double) params.Scale;
     double factor = params.VelocityLengthFactor;
-    view.DrawLine(params.VelocityColor, p.Position.X() * rezScale , p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
+    view.DrawLine(params.VelocityColor, p.Position.X() * rezScale, p.Position.Y() * rezScale, p.Velocity.X()*factor, p.Velocity.Y()*factor);
 }
