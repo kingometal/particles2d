@@ -8,6 +8,7 @@ EXECUTABLE = particles2d.x
 INTERFACEFOLDER=interfaces
 INTERFACEFILES=$(INTERFACEFOLDER)/IPresenter.h
 SOURCEDIR=source
+CMAKE_FOLDER=cmake
 
 all: ${EXECUTABLE}
 
@@ -78,3 +79,9 @@ $(OUTDIR)/userinput.o: $(SOURCEDIR)/UserInput.h $(SOURCEDIR)/UserInput.cpp
 $(OUTDIR)/presenter.o: $(SOURCEDIR)/Presenter.cpp $(SOURCEDIR)/Presenter.h $(SOURCEDIR)/$(INTERFACEFILES)
 	$(GCC) -c $(SOURCEDIR)/Presenter.cpp -o $(OUTDIR)/presenter.o
 #############################################
+
+cmake-build:
+	mkdir -p ${CMAKE_FOLDER}; cd ${CMAKE_FOLDER}; cmake ..; make
+
+cmake-clean:
+	rm -rf ${CMAKE_FOLDER}; rm ${EXECUTABLE}
