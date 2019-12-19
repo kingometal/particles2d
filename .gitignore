@@ -34,3 +34,19 @@
 
 # Temporary
 *.swp
+
+# Cmake folder
+cmake/
+
+# qtcreator files
+particles2d.config
+particles2d.creator
+particles2d.creator.user
+particles2d.files
+particles2d.includes
+
+# orig files
+*.orig
+
+#visual studio code files
+.vscode/
