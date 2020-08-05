@@ -6,7 +6,7 @@ class UserInput: public IUserInput
 {
 public:
     UserInput();
-    ~UserInput() = default;
+    virtual ~UserInput() = default;
 
     bool IsQuitRequested();
     char CheckKeyPress();

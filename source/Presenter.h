@@ -6,7 +6,7 @@ class Presenter: public IPresenter
 {
 public:
     Presenter();
-    ~Presenter();
+    virtual ~Presenter();
 
     // IPresenter interface
     void StorePoint(int x, int y, const RGBData &data);
