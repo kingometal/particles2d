@@ -376,6 +376,17 @@ void Particles::HandleKeyPress()
             PManager->ChangeRadius(i, 0.1);
         }
         cout << "radius increased by 0.1; it is now " << PManager->P(0).Radius << endl;
+    } else if (check == '7')
+    {
+        Params.Dissipation /= 2;
+        if (Params.Dissipation < 0.000000000001) Params.Dissipation = 0.0;
+        cout << "Dissipation =" << Params.Dissipation << endl;
+    }
+    else if (check == '8')
+    {
+        Params.Dissipation *= 2;
+        if (Params.Dissipation < 0.000000000001) Params.Dissipation = 0.000000000001;
+        cout << "Dissipation =" << Params.Dissipation << endl;
     }
 }
 
