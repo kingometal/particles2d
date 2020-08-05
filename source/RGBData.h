@@ -4,7 +4,7 @@
 class RGBData
 {
 public:
-    RGBData(char r, char g, char b, char alpha);
+    RGBData(unsigned char r, unsigned char g, unsigned char b, unsigned char alpha);
     RGBData& operator=(const RGBData& rhs);
     RGBData();
     ~RGBData();

@@ -17,7 +17,7 @@ Vector GetLennardJonesForce(const Particle& p1, const Particle& p2, double dista
 
 Vector GetInterParticleForce(const Particle& p1, const Particle& p2, const PhysicalConstants& Params);
 
-double eKin(const ParticleManager* PManager, const Config & Params);
+double eKin(const ParticleManager* PManager);
 
 double eEl(const ParticleManager* PManager, const Config & Params);
 

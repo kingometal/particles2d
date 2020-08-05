@@ -198,7 +198,7 @@ int ParticleManager::GetClosestParticle(int x, int y) const
 
 int ParticleManager::AddParticle(const Vector& position, const Vector& velocity, const double mass, const double charge, const double radius)
 {
-    Impl->AddParticle(position, velocity, mass, charge, radius);
+    return Impl->AddParticle(position, velocity, mass, charge, radius);
 }
 
 void ParticleManager::RemoveParticle(const int index)

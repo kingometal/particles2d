@@ -99,6 +99,7 @@ public:
     {
         v[0] = v2.v[0];
         v[1] = v2.v[1];
+        return *this;
     }
 
     inline double Abs() const

@@ -1,7 +1,7 @@
 #include "RGBData.h"
 #include "iostream"
 
-RGBData::RGBData(char r, char g, char b, char alpha)
+RGBData::RGBData(unsigned char r, unsigned char g, unsigned char b, unsigned char alpha)
     : R(r)
     , G(g)
     , B(b)

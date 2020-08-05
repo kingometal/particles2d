@@ -67,7 +67,7 @@ Vector GetInterParticleForce(const Particle& p1, const Particle& p2, const Physi
     return resultingForce;
 }
 
-double eKin(const ParticleManager* PManager, const Config & Params) {
+double eKin(const ParticleManager* PManager) {
     double En = 0.0;
     for (int n1 = 0; n1 < PManager->PCount(); n1++) {
         En += PManager->P(n1).Mass * pow(PManager->P(n1).Velocity.Abs(),2);

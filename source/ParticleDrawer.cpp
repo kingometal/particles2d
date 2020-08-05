@@ -29,7 +29,7 @@ void ParticleDrawer::Draw(IParticlesView& view, const ParticleManager& pm, Confi
             LastFPSOutputTime = timeNow;
             FPSValuesCount = 0;
             FPSValuesSum = 0;
-            EKin = Physics::eKin(&pm, params);
+            EKin = Physics::eKin(&pm);
             EGrav = Physics::eG(&pm, params);
             EEl = Physics::eEl(&pm, params);
             EMol = Physics::eMol(&pm, params);
@@ -57,7 +57,6 @@ void ParticleDrawer::Draw(IParticlesView& view, const ParticleManager& pm, Confi
 
         for (int i = 0; i < pm.PCount(); i++)
         {
-            const Particle & p = pm.P(i);
             DrawParticle(view, pm, params, i);
             if (params.DrawVelocities)
             {
