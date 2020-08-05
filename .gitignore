@@ -37,6 +37,7 @@
 
 # Cmake folder
 cmake/
+build/
 
 # qtcreator files
 particles2d.config
